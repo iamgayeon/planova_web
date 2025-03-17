@@ -14,7 +14,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Sidebar from './Sidebar.vue';
-import StudentHeader from '../StudentHeader.vue';
+import StudentHeader from './StudentHeader.vue';
 
 const activeMenu = ref('home');
 const router = useRouter();

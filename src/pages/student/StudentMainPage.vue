@@ -1,63 +1,71 @@
 <template>
   <div class="membership-page">
     <div class="page-container">
-      <div class="special-offer-badge">
-        오픈특가 한정
-      </div>
-      
       <div class="left-section">
-        <div class="timing-info">
-          이용 시작하기 최적의 타이밍 ⏰
-        </div>
-        
         <div class="offer-card">
-          <div class="offer-title">
-            프리미엄 이용권 1개월
-            <div class="bonus">+ <span class="highlight">1개월 추가</span> 제공</div>
+          <div class="special-offer-badge">
+            오픈특가 한정
           </div>
-          <div class="usage-time">이용기간 60일</div>
+          <div class="offer-header">
+            <div class="offer-title">프리미엄 이용권 1개월</div>
+            <div class="bonus-info">
+              <div class="plus-icon">+</div>
+              <div>이용권 1개월(30일) 추가제공</div>
+            </div>
+          </div>
           
           <div class="price-info">
             <div class="original-price">정가 <span class="price-strike">59,800원</span></div>
             <div class="discount-price">
-              <div class="discount-rate">50%</div>
+              <div class="discount-badge">50%</div>
               <div class="final-price">
                 할인가 <span class="price-highlight">29,900원</span>
               </div>
             </div>
           </div>
         </div>
-        
         <button class="purchase-button">
           이용권 구매하기
         </button>
+                
       </div>
       
       <div class="right-section">
         <div class="user-info-card">
           <h2 class="greeting">안녕하세요 한가연님!</h2>
-          <div class="subscription-info">이용권 함께 1일째</div>
+          <div class="subscription-info">PLANOVA와 함께 1일째</div>
           
-          <div class="info-item">
-            <div class="info-label">내 이용권</div>
-            <div class="info-value">사용중인 이용권이 없습니다.</div>
-          </div>
-          
-          <div class="info-item">
-            <div class="info-label">포인트</div>
-            <div class="info-value">0P</div>
-          </div>
-          
-          <div class="info-item">
-            <div class="info-label">쿠폰</div>
-            <div class="info-value">0</div>
+          <div class="info-items">
+            <div class="info-item">
+              <div class="info-content">
+                <div class="info-label">오늘 할 일</div>
+                <div class="info-value">공부하기</div>
+              </div>
+            </div>
+            
+            <div class="info-item">
+              <div class="info-content">
+                <div class="info-label">내일 할 일</div>
+                <div class="info-value">공부공부하기</div>
+              </div>
+            </div>
+            
+            <div class="info-item">
+              <div class="info-content">
+                <div class="info-label">이번주 할 일</div>
+                <div class="info-value">공부공부공부하기</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
     
     <div class="features-section">
-      <h2 class="features-title">이름이 처음이라면 아래 목록을 진행해보세요!</h2>
+      <div class="features-header">
+        <div class="glow-effect"></div>
+        <h2 class="features-title">처음이라면 아래 목록을 진행해보세요!</h2>
+      </div>  
       
       <div class="feature-cards">
         <div class="feature-card">
@@ -69,299 +77,563 @@
         <div class="feature-card">
           <div class="feature-icon calendar-icon"></div>
           <div class="feature-text">캘린더에 학습 일정 등록하기</div>
-          <div class="check-icon checked"></div>
+          <div class="check-icon"></div>
         </div>
         
         <div class="feature-card">
           <div class="feature-icon ai-icon"></div>
           <div class="feature-text">AI튜터에게 질문하기</div>
-          <div class="check-icon checked"></div>
+          <div class="check-icon"></div>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-
-// 사용자 정보 (추후 API에서 가져올예정)
-const userName = ref('한가연');
-const daysUsed = ref(1);
-const hasActiveSubscription = ref(false);
-const points = ref(0);
-const coupons = ref(0);
-
-const purchaseSubscription = () => {
-  console.log('이용권 구매 처리');
-};
-</script>
-
 <style scoped>
 .membership-page {
   font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
   max-width: 1200px;
   margin: 0 auto;
-  margin-top: 30px;
+  margin-top: 40px;
   padding: 20px;
   color: #333;
+  background-color: #f9f9f9;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
 .page-container {
   display: flex;
-  gap: 20px;
+  gap: 30px;
   position: relative;
-  margin-bottom: 60px;
+  margin-bottom: 70px;
 }
 
 .special-offer-badge {
-  position: absolute;
-  top: -30px;
-  left: 0;
-  background-color: #F76707;
+  background: linear-gradient(135deg, #FF6B00, #FF9500);
   color: white;
-  padding: 12px 24px;
+  padding: 10px 30px;
   border-radius: 8px;
-  font-weight: bold;
-  font-size: 16px;
-  z-index: 1;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 5px 15px rgba(255, 103, 7, 0.3);
+  display: inline-block;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 2;
 }
 
 .left-section {
   flex: 3;
-  background-color: #FFFAF4;
-  border-radius: 12px;
-  padding: 40px;
+  background: linear-gradient(135deg, #FFFAF4, #FFF6E8);
+  border-radius: 20px;
+  padding: 35px;
   position: relative;
-}
-
-.timing-info {
-  color: #F76707;
-  font-size: 18px;
-  font-weight: 500;
-  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  border: none;
 }
 
 .offer-card {
   background-color: white;
-  border-radius: 12px;
-  padding: 25px;
+  border-radius: 16px;
+  padding: 30px;
+  padding-top: 60px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
+  position: relative;
+  overflow: visible; 
+  border: none;
+  transform: translateY(0);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+}
+
+.offer-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.offer-card:hover .special-offer-badge {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(255, 103, 7, 0.4);
+}
+
+.offer-header {
+  text-align: center;
   margin-bottom: 25px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-top: 15px;
 }
 
 .offer-title {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.bonus {
-  display: inline;
-  font-size: 18px;
-}
-
-.highlight {
-  color: #F76707;
-}
-
-.usage-time {
-  color: #666;
-  font-size: 14px;
+  font-size: 26px;
+  font-weight: 800;
   margin-bottom: 20px;
+  color: #ff6a00;
+  position: relative;
+  display: inline-block;
+}
+
+.bonus-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(to right, #FFF3E0, #FFE0B2);
+  padding: 12px 20px;
+  border-radius: 50px;
+  margin: 0 auto;
+  width: fit-content;
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  box-shadow: 0 4px 10px rgba(247, 103, 7, 0.15);
+  transition: all 0.3s ease;
+  border-left: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.bonus-info::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.offer-card:hover .bonus-info::before {
+  transform: translateX(100%);
+}
+
+.plus-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #F76707, #FF9500);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 3px 8px rgba(247, 103, 7, 0.3);
 }
 
 .price-info {
-  margin-top: 20px;
+  margin-top: 25px;
+  background-color: #FFFAF4;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px dashed #FFE0B2;
+  position: relative;
+  overflow: hidden;
+}
+
+.price-info::before {
+  content: "";
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(247, 103, 7, 0.05), transparent);
+  top: -100px;
+  right: -100px;
+  border-radius: 50%;
 }
 
 .original-price {
   text-align: right;
-  color: #999;
+  color: #888;
   font-size: 15px;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
 
 .price-strike {
   text-decoration: line-through;
+  margin-left: 5px;
 }
 
 .discount-price {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 15px;
 }
 
-.discount-rate {
-  color: #F76707;
-  font-size: 24px;
+.discount-badge {
+  background: linear-gradient(135deg, #F76707, #FF9500);
+  color: white;
+  font-size: 22px;
   font-weight: bold;
+  padding: 4px 16px;
+  border-radius: 50px;
+  box-shadow: 0 4px 10px rgba(247, 103, 7, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.discount-badge::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: skewX(-25deg);
 }
 
 .final-price {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .price-highlight {
-  font-size: 28px;
-  font-weight: bold;
-  color: #000;
+  font-size: 32px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #F76707, #FF9500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-left: 8px;
+  position: relative;
 }
 
 .purchase-button {
   width: 100%;
-  padding: 16px;
-  background-color: #F76707;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 18px;
+  padding: 18px;
+  background: #FFFAF4;
+  color: #F76707;
+  border: 2px solid #F76707;
+  border-radius: 10px;
+  font-size: 20px;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.2s;
+  box-shadow: 0 8px 20px rgba(247, 103, 7, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 20px;
 }
 
-.purchase-button:hover {
-  background-color: #E55E00;
-}
 
+
+.purchase-button:hover::before {
+  left: 100%;
+}
 .right-section {
   flex: 2;
 }
 
 .user-info-card {
   background-color: white;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: none;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.user-info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
 .greeting {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  color: #222;
+  position: relative;
+  display: inline-block;
 }
 
 .subscription-info {
   color: #666;
   font-size: 14px;
   margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-items {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .info-item {
-  margin-bottom: 20px;
   padding-bottom: 15px;
   border-bottom: 1px solid #F0F0F0;
+  margin-bottom: 15px;
+  transition: transform 0.3s ease;
+}
+
+.info-item:hover {
+  transform: translateX(5px);
+}
+
+.info-content {
+  flex: 1;
 }
 
 .info-label {
   color: #666;
-  font-size: 15px;
-  margin-bottom: 8px;
+  font-size: 14px;
+  margin-bottom: 6px;
 }
 
 .info-value {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
+  color: #333;
 }
 
 .features-section {
-  margin-top: 40px;
+  margin-top: 50px;
+  background-color: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.features-section::before {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(247, 103, 7, 0.05), transparent);
+  top: -150px;
+  right: -150px;
+  border-radius: 50%;
+}
+
+.features-header {
+  position: relative;
+  margin-bottom: 50px;
+  text-align: center;
+  padding: 20px 0;
+  overflow: hidden;
+}
+
+.glow-effect {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: radial-gradient(circle, rgba(247, 103, 7, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
+  animation: pulse-glow 3s infinite;
+}
+
+@keyframes pulse-glow {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
 }
 
 .features-title {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
-  margin-bottom: 30px;
+  color: #333;
   text-align: center;
+  position: relative;
+  display: inline-block;
+  padding: 0 15px;
+}
+
+.features-title::before,
+.features-title::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 30px;
+  background: linear-gradient(to bottom, #F76707, #FF9500);
+  border-radius: 3px;
+}
+
+.features-title::before {
+  left: -30px;
+}
+
+.features-title::after {
+  right: -30px;
+}
+
+.steps-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.step-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #DDD;
+  transition: all 0.3s ease;
+}
+
+.step-dot.active {
+  background: linear-gradient(135deg, #F76707, #FF9500);
+  box-shadow: 0 0 10px rgba(247, 103, 7, 0.5);
+}
+
+.step-line {
+  height: 2px;
+  width: 30px;
+  background-color: #DDD;
+  margin: 0 5px;
 }
 
 .feature-cards {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  margin-bottom: 40px;
 }
 
 .feature-card {
   display: flex;
   align-items: center;
   background-color: white;
-  border-radius: 12px;
-  padding: 20px 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  padding: 25px 30px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  border: none;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, background-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: "";
+  position: absolute;
+  background: linear-gradient(90deg, rgba(247, 103, 7, 0.1), transparent);
+  width: 30%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  transform: translateX(-100%);
+  transition: transform 1.5s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  background-color: #FFFAF4;
+}
+
+.feature-card:hover::before {
+  transform: translateX(300%);
+}
+
+.feature-number {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, #F76707, #FF9500);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 4px 8px rgba(247, 103, 7, 0.3);
 }
 
 .feature-icon {
-  width: 40px;
-  height: 40px;
-  margin-right: 15px;
-  background-color: #FFF3E8;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  margin-right: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.1);
 }
 
 .pdf-icon::before {
   content: "";
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  background-color: #F76707;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'%3E%3C/path%3E%3Cpolyline points='14 2 14 8 20 8'%3E%3C/polyline%3E%3Cline x1='16' y1='13' x2='8' y2='13'%3E%3C/line%3E%3Cline x1='16' y1='17' x2='8' y2='17'%3E%3C/line%3E%3Cpolyline points='10 9 9 9 8 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat center;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'%3E%3C/path%3E%3Cpolyline points='14 2 14 8 20 8'%3E%3C/polyline%3E%3Cline x1='16' y1='13' x2='8' y2='13'%3E%3C/line%3E%3Cline x1='16' y1='17' x2='8' y2='17'%3E%3C/line%3E%3Cpolyline points='10 9 9 9 8 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat center;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: url('@/assets/images/studentmain-pdf.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
-
 .calendar-icon::before {
   content: "";
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  background-color: #F76707;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: url('@/assets/images/studentmain-calendar.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
-
 .ai-icon::before {
   content: "";
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  background-color: #F76707;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='11' width='18' height='11' rx='2' ry='2'%3E%3C/rect%3E%3Cpath d='M7 11V7a5 5 0 0 1 10 0v4'%3E%3C/path%3E%3C/svg%3E") no-repeat center;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='11' width='18' height='11' rx='2' ry='2'%3E%3C/rect%3E%3Cpath d='M7 11V7a5 5 0 0 1 10 0v4'%3E%3C/path%3E%3C/svg%3E") no-repeat center;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: url('@/assets/images/studentmain-ai.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .feature-text {
   flex: 1;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
 }
 
 .check-icon {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background-color: #F1F1F1;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url('@/assets/images/studentmain-noncheck.png');
+  transition: transform 0.3s ease;
 }
 
 .check-icon.checked {
-  background-color: #F76707;
-  position: relative;
+  background-image: url('@/assets/images/studentmain-check.png');
+  animation: bounce 0.5s ease;
 }
 
-.check-icon.checked::before {
-  content: "";
-  position: absolute;
-  width: 14px;
-  height: 8px;
-  border-left: 2px solid white;
-  border-bottom: 2px solid white;
-  transform: rotate(-45deg) translate(-50%, -50%);
-  left: 50%;
-  top: 40%;
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+  40% {transform: translateY(-10px);}
+  60% {transform: translateY(-5px);}
 }
 
 @media (max-width: 768px) {
@@ -370,17 +642,19 @@ const purchaseSubscription = () => {
   }
   
   .right-section {
-    margin-top: 30px;
-  }
-  
-  .special-offer-badge {
-    position: static;
-    display: inline-block;
-    margin-bottom: 20px;
+    margin-top: 40px;
   }
   
   .left-section {
     padding: 25px;
+  }
+  
+  .offer-title {
+    font-size: 22px;
+  }
+  
+  .price-highlight {
+    font-size: 28px;
   }
 }
 </style>

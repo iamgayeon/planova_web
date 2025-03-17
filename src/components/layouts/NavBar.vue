@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import MenuGroup from './menu/MenuGroup.vue';
 import AccountMenuGroup from './menu/AccountMenuGroup.vue';
 import config from '@/config';
-import { useAuthStore } from '@/stores/auth'; // Pinia store import
+import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
 const state = ref({

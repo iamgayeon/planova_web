@@ -14,7 +14,6 @@ const handleMenuClick = (menuName) => {
   emit('menu-click', menuName);
 };
 
-// 호버 상태 추적
 const hoveredItem = ref(null);
 
 const setHovered = (menuName) => {
