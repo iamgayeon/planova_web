@@ -54,7 +54,6 @@ const logout = () => {
             </li>
           </ul>
           <div class="auth-buttons">
-            <!-- 로그인 상태에 따른 조건부 렌더링 -->
             <template v-if="authStore.isLoggedIn">
               <div class="user-greeting">
                 <span class="welcome-text">{{ authStore.user.username }}님 환영합니다!</span>
@@ -65,7 +64,6 @@ const logout = () => {
               </div>
             </template>
             <template v-else>
-              <!-- 디버깅용 onClick 이벤트 직접 추가 -->
               <button 
                 class="btn btn-primary signup-btn" 
                 @click="navigateToSignup"
