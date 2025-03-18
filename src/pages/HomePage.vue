@@ -55,15 +55,6 @@ onBeforeUnmount(() => {
           >
         </div>
       </div>
-      
-      <!-- 네비게이션 버튼 -->
-      <!-- <button @click="prevSlide" class="nav-button prev-button">
-        &#10094;
-      </button>
-      <button @click="nextSlide" class="nav-button next-button">
-        &#10095;
-      </button> -->
-      
       <div class="indicators">
         <button 
           v-for="(slide, index) in slides" 

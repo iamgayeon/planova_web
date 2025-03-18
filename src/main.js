@@ -8,6 +8,7 @@ import VueAwesomePaginate from 'vue-awesome-paginate';
 
 import App from './App.vue';
 import router from './router';
+import VCalendar from 'v-calendar';
 
 const app = createApp(App);
 const pinia = createPinia()
@@ -15,5 +16,6 @@ const pinia = createPinia()
 app.use(VueAwesomePaginate);
 app.use(pinia);
 app.use(router);
+app.use(VCalendar, {}); 
 
 app.mount('#app');
