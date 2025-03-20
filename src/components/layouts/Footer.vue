@@ -86,7 +86,7 @@ const subscribe = () => {
         <div class="company-info">
           <p>주식회사 플래노바 | 대표: 김플래노바 | 사업자등록번호: 123-45-67890 | 통신판매업신고: 제2023-서울강남-1234호</p>
           <p>주소: 서울특별시 광진구 군자로98 | 개인정보관리책임자: 김플래노바 (privacy@planova.co.kr)</p>
-          <p>고객센터: 02-1234-5678 | 이메일: support@planova.co.kr | 운영시간: 평일 10:00-18:00 (점심시간 13:00-14:00)</p>
+          <p>고객센터: 010-9843-6764 | 이메일: support@planova.co.kr | 운영시간: 평일 10:00-18:00 (점심시간 13:00-14:00)</p>
         </div>
         <div class="copyright">
           <p><i class="fa-regular fa-copyright"></i> {{ currentYear }} 플래노바 planova Inc. All rights reserved.</p>

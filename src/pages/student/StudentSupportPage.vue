@@ -12,7 +12,7 @@ import { ref, reactive } from 'vue';
       
       <div class="contact-info">
         <p class="contact-type">대표전화</p>
-        <p class="phone-number">02-1234-1234</p>
+        <p class="phone-number">010-9843-6764</p>
         
         <p class="hours-title">운영시간</p>
         <p class="hours">평일 오전 10:00 ~ 오후 6:00 KST</p>

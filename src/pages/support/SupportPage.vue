@@ -139,8 +139,8 @@ const categories = ref([
   <div class="contact-section">
     <div class="contact-container">
       <div class="contact-text">
-        <h2 class="title">더 궁금한 것이 있다면 플래노바<br>고객센터로 연락주세요.</h2>
-        <button class="contact-button">플래노바팀에 문의하기</button>
+        <h2 class="title">더 궁금한 것이 있다면 PLANOVA<br>고객센터로 연락주세요.</h2>
+        <button class="contact-button">PLANOVA팀에 문의하기</button>
       </div>
       
       <div class="contact-info">

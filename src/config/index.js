@@ -6,13 +6,19 @@ export default {
       url: '/',
     },
     {
-      title: '이용안내',
+      title: '이용권 구매',
       url: '/information/pass',
+    },
+    {
+      title: '이벤트',
+      url: '/event/list',
     },
     {
       title: '고객지원',
       url: '/support/service',
     },
+    
+
   ],
 
   accoutMenus: {
