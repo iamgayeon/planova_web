@@ -35,27 +35,18 @@
           <h2 class="greeting">안녕하세요 한가연님!</h2>
           <div class="subscription-info">PLANOVA와 함께 1일째</div>
           
-          <div class="info-items">
-            <div class="info-item">
-              <div class="info-content">
-                <div class="info-label">오늘 할 일</div>
-                <div class="info-value">공부하기</div>
-              </div>
-            </div>
-            
-            <div class="info-item">
-              <div class="info-content">
-                <div class="info-label">내일 할 일</div>
-                <div class="info-value">공부공부하기</div>
-              </div>
-            </div>
-            
-            <div class="info-item">
-              <div class="info-content">
-                <div class="info-label">이번주 할 일</div>
-                <div class="info-value">공부공부공부하기</div>
-              </div>
-            </div>
+          <!-- v-calendar 컴포넌트 -->
+          <div class="calendar-container">
+            <v-calendar 
+              :attributes="calendarAttributes"
+              :is-expanded="true"
+              :columns="1"
+              :rows="1"
+              title-position="left"
+              class="custom-calendar"
+              color="indigo"
+              :masks="masks"
+            />
           </div>
         </div>
       </div>
@@ -89,6 +80,54 @@
     </div>
   </div>
 </template>
+
+<script>
+import { ref, computed } from 'vue';
+import 'v-calendar/dist/style.css';
+
+export default {
+  setup() {
+    const masks = {
+      title: 'YYYY년 M월'
+    };
+
+    const events = ref([
+      { date: new Date(2025, 2, 18), title: '학교 수업', type: 'class' },
+      { date: new Date(2025, 2, 20), title: '영어 학습', type: 'study' }
+    ]);
+
+    const calendarAttributes = computed(() => [
+      {
+        key: 'today',
+        highlight: {
+          color: 'indigo',
+          fillMode: 'solid'
+        },
+        dates: new Date()
+      },
+      ...events.value.filter(event => event.type === 'class').map(event => ({
+        key: `class-${event.date.toString()}`,
+        dates: event.date,
+        popover: {
+          label: event.title
+        }
+      })),
+      ...events.value.filter(event => event.type === 'study').map(event => ({
+        key: `study-${event.date.toString()}`,
+        dates: event.date,
+        popover: {
+          label: event.title
+        }
+      }))
+    ]);
+
+    return {
+      calendarAttributes,
+      masks
+    };
+  }
+}
+</script>
 
 <style scoped>
 .membership-page {
@@ -323,11 +362,10 @@
   margin-top: 20px;
 }
 
-
-
 .purchase-button:hover::before {
   left: 100%;
 }
+
 .right-section {
   flex: 2;
 }
@@ -368,37 +406,88 @@
   gap: 6px;
 }
 
-.info-items {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.calendar-container {
+  margin-top: 10px;
+  width: 100%;
 }
 
-.info-item {
-  padding-bottom: 15px;
-  border-bottom: 1px solid #F0F0F0;
-  margin-bottom: 15px;
-  transition: transform 0.3s ease;
+:deep(.custom-calendar) {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  background-color: white;
+  width: 100%;
 }
 
-.info-item:hover {
-  transform: translateX(5px);
+:deep(.vc-title) {
+  font-weight: bold;
+  font-size: 20px;
+  background-color: white;
 }
 
-.info-content {
-  flex: 1;
-}
-
-.info-label {
-  color: #666;
+:deep(.vc-weekday) {
+  color: #888;
   font-size: 14px;
-  margin-bottom: 6px;
+  font-weight: normal;
 }
 
-.info-value {
-  font-size: 16px;
-  font-weight: 600;
+:deep(.vc-day) {
+  font-size: 14px;
   color: #333;
+  height: 50px;
+}
+
+:deep(.vc-day-content) {
+  height: 45px;
+  width: 45px;
+  align-items: center;
+  justify-content: center;
+}
+
+:deep(.vc-container) {
+  border: none;
+}
+
+:deep(.vc-highlight) {
+  background-color: #ff7300
+}
+
+:deep(.vc-day.is-today) {
+  font-weight: bold;
+}
+
+:deep(.vc-day.is-not-in-month) {
+  opacity: 0.4;
+}
+
+.calendar-legend {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.legend-text {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+:deep(.vc-arrow) {
+  font-size: 18px;
+  color: #888;
 }
 
 .features-section {
@@ -477,33 +566,6 @@
   right: -30px;
 }
 
-.steps-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 15px;
-}
-
-.step-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: #DDD;
-  transition: all 0.3s ease;
-}
-
-.step-dot.active {
-  background: linear-gradient(135deg, #F76707, #FF9500);
-  box-shadow: 0 0 10px rgba(247, 103, 7, 0.5);
-}
-
-.step-line {
-  height: 2px;
-  width: 30px;
-  background-color: #DDD;
-  margin: 0 5px;
-}
-
 .feature-cards {
   display: flex;
   flex-direction: column;
@@ -544,23 +606,6 @@
 
 .feature-card:hover::before {
   transform: translateX(300%);
-}
-
-.feature-number {
-  position: absolute;
-  top: -10px;
-  left: -10px;
-  width: 30px;
-  height: 30px;
-  background: linear-gradient(135deg, #F76707, #FF9500);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  font-size: 16px;
-  box-shadow: 0 4px 8px rgba(247, 103, 7, 0.3);
 }
 
 .feature-icon {

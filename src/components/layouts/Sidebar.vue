@@ -34,12 +34,6 @@ const handleMenuClick = (menuName) => {
   else router.push(`/student/${menuName}`);
 };
 
-// 로고 클릭 시 홈으로 이동하는 함수 추가
-const navigateToHome = () => {
-  emit('menu-click', 'main');
-  router.push('/student/main');
-};
-
 const hoveredItem = ref(null);
 
 const setHovered = (menuName) => {
