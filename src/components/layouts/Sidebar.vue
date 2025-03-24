@@ -34,6 +34,11 @@ const handleMenuClick = (menuName) => {
   else router.push(`/student/${menuName}`);
 };
 
+const navigateToHome = () => {
+  emit('menu-click', 'main');
+  router.push('/student/main');
+};
+
 const hoveredItem = ref(null);
 
 const setHovered = (menuName) => {
