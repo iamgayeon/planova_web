@@ -47,7 +47,7 @@ const clearHovered = () => {
 
 <template>
   <aside class="sidebar">
-    <div class="logo-container">
+    <div class="logo-container" @click="navigateToHome" style="cursor: pointer;">
       <img src="@/assets/images/planova-small-logo.jpg" alt="로고" class="logo">
     </div>
     
