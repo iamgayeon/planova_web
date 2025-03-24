@@ -1,17 +1,43 @@
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-const props = defineProps({
+const route = useRoute();
+const router = useRouter();
+
+defineProps({
   activeMenu: {
     type: String,
-    default: 'home'
+    default: 'main'
   }
+});
+
+const currentMenu = computed(() => {
+  const path = route.path;
+  
+  if (path.includes('/student/aitutor')) return 'aitutor';
+  if (path.includes('/student/pdf')) return 'pdf';
+  if (path.includes('/student/calendar')) return 'calendar';
+  if (path.includes('/student/myroom')) return 'myroom';
+  if (path.includes('/student/faq')) return 'faq';
+  if (path.includes('/student/support')) return 'support';
+  
+  return 'main';
 });
 
 const emit = defineEmits(['menu-click']);
 
 const handleMenuClick = (menuName) => {
   emit('menu-click', menuName);
+  
+  if (menuName === 'main') router.push('/student/main');
+  else router.push(`/student/${menuName}`);
+};
+
+// 로고 클릭 시 홈으로 이동하는 함수 추가
+const navigateToHome = () => {
+  emit('menu-click', 'main');
+  router.push('/student/main');
 };
 
 const hoveredItem = ref(null);
@@ -27,21 +53,21 @@ const clearHovered = () => {
 
 <template>
   <aside class="sidebar">
-    <div class="logo-container">
+    <div class="logo-container" @click="navigateToHome" style="cursor: pointer;">
       <img src="@/assets/images/planova-small-logo.jpg" alt="로고" class="logo">
     </div>
     
     <nav class="nav-menu">
       <div 
         class="nav-item" 
-        :class="{ active: activeMenu === 'home' }"
-        @click="handleMenuClick('home')"
-        @mouseenter="setHovered('home')"
+        :class="{ active: currentMenu === 'main' }"
+        @click="handleMenuClick('main')"
+        @mouseenter="setHovered('main')"
         @mouseleave="clearHovered"
       >
       <div class="nav-icon">
         <img 
-          :src="activeMenu === 'home' || hoveredItem === 'home'
+          :src="currentMenu === 'main' || hoveredItem === 'main'
             ? '/sidebar-home-click.png' 
             : '/sidebar-home.png'" 
           class="icon-image"
@@ -52,14 +78,14 @@ const clearHovered = () => {
       
       <div 
         class="nav-item" 
-        :class="{ active: activeMenu === 'pdf' }"
+        :class="{ active: currentMenu === 'pdf' }"
         @click="handleMenuClick('pdf')"
         @mouseenter="setHovered('pdf')"
         @mouseleave="clearHovered"
       >
       <div class="nav-icon">
         <img 
-          :src="activeMenu === 'pdf' || hoveredItem === 'pdf'
+          :src="currentMenu === 'pdf' || hoveredItem === 'pdf'
             ? '/sidebar-pdf-click.png' 
             : '/sidebar-pdf.png'" 
           class="icon-image"
@@ -70,14 +96,14 @@ const clearHovered = () => {
       
       <div 
         class="nav-item" 
-        :class="{ active: activeMenu === 'ai-tutor' }"
-        @click="handleMenuClick('ai-tutor')"
-        @mouseenter="setHovered('ai-tutor')"
+        :class="{ active: currentMenu === 'aitutor' }"
+        @click="handleMenuClick('aitutor')"
+        @mouseenter="setHovered('aitutor')"
         @mouseleave="clearHovered"
       >
       <div class="nav-icon">
         <img 
-          :src="activeMenu === 'ai-tutor' || hoveredItem === 'ai-tutor'
+          :src="currentMenu === 'aitutor' || hoveredItem === 'aitutor'
             ? '/sidebar-aitutor-click.png' 
             : '/sidebar-aitutor.png'" 
           class="icon-image"
@@ -89,14 +115,14 @@ const clearHovered = () => {
       
       <div 
         class="nav-item" 
-        :class="{ active: activeMenu === 'calendar' }"
+        :class="{ active: currentMenu === 'calendar' }"
         @click="handleMenuClick('calendar')"
         @mouseenter="setHovered('calendar')"
         @mouseleave="clearHovered"
       >
       <div class="nav-icon">
         <img 
-          :src="activeMenu === 'calendar' || hoveredItem === 'calendar'
+          :src="currentMenu === 'calendar' || hoveredItem === 'calendar'
             ? '/sidebar-calendar-click.png' 
             : '/sidebar-calendar.png'" 
           class="icon-image"
@@ -107,14 +133,14 @@ const clearHovered = () => {
       
       <div 
         class="nav-item" 
-        :class="{ active: activeMenu === 'myroom' }"
+        :class="{ active: currentMenu === 'myroom' }"
         @click="handleMenuClick('myroom')"
         @mouseenter="setHovered('myroom')"
         @mouseleave="clearHovered"
       >
       <div class="nav-icon">
         <img 
-          :src="activeMenu === 'myroom' || hoveredItem === 'myroom'
+          :src="currentMenu === 'myroom' || hoveredItem === 'myroom'
             ? '/sidebar-myroom-click.png' 
             : '/sidebar-myroom.png'" 
           class="icon-image"
@@ -125,14 +151,14 @@ const clearHovered = () => {
       
       <div 
         class="nav-item" 
-        :class="{ active: activeMenu === 'faq' }"
+        :class="{ active: currentMenu === 'faq' }"
         @click="handleMenuClick('faq')"
         @mouseenter="setHovered('faq')"
         @mouseleave="clearHovered"
       >
       <div class="nav-icon">
         <img 
-          :src="activeMenu === 'faq' || hoveredItem === 'faq'
+          :src="currentMenu === 'faq' || hoveredItem === 'faq'
             ? '/sidebar-faq-click.png' 
             : '/sidebar-faq.png'" 
           class="icon-image"
@@ -143,14 +169,14 @@ const clearHovered = () => {
       
       <div 
         class="nav-item" 
-        :class="{ active: activeMenu === 'support' }"
+        :class="{ active: currentMenu === 'support' }"
         @click="handleMenuClick('support')"
         @mouseenter="setHovered('support')"
         @mouseleave="clearHovered"
       >
       <div class="nav-icon">
         <img 
-          :src="activeMenu === 'support' || hoveredItem === 'support'
+          :src="currentMenu === 'support' || hoveredItem === 'support'
             ? '/sidebar-support-click.png' 
             : '/sidebar-support.png'" 
           class="icon-image-support"
