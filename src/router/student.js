@@ -26,8 +26,13 @@ export default [
       {
         path: 'pdf',
         name: 'studentPdf',
-        component: () => import('../pages/student/StudentPdfPage.vue'),
+        component: () => import('../pages/student/pdf/StudentPdfPage.vue'),
         meta: { layout: 'StudentLayout' }
+      },
+      {
+        path: '/student/pdf/view/:fileId',
+        name: 'PdfViewer',
+        component: () => import('../pages/student/pdf/StudentPdfViewPage.vue')
       },
       {
         path: 'mypage',
