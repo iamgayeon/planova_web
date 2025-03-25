@@ -430,7 +430,7 @@ export default {
 }
 
 .action-icon {
-  width: 40%;
+  width: 40px;
   height: 40px;
   background-color: transparent;
 }
