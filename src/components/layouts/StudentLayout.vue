@@ -30,7 +30,7 @@ const handleMenuClick = (menuName) => {
   } else if (menuName === 'calendar') {
     router.push({ name: 'studentCalendar' });
   } else if (menuName === 'myroom') {
-    router.push({ name: 'studentMypage' });
+    router.push({ name: 'studentMyroom' });
   } else if(menuName === 'faq'){
     router.push({ name: 'studentFaq'});
   } else if(menuName === 'support'){

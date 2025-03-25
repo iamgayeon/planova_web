@@ -31,7 +31,7 @@ export default [
       },
       {
         path: 'myroom',
-        name: 'studentMyRoom',
+        name: 'studentMyroom',
         component: () => import('../pages/student/StudentMyroomPage.vue'),
         meta: { layout: 'StudentLayout' }
       },
