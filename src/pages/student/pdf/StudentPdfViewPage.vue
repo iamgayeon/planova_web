@@ -1,923 +1,511 @@
 <template>
-  <div class="student-pdf-container">
-    <div class="top-container">
-      <div class="tab-container">
-        <button 
-          class="tab-button" 
-          :class="{ 'active': activeTab === 'personal' }"
-          @click="activeTab = 'personal'"
-        >
-          개인
-        </button>
-        <button 
-          class="tab-button" 
-          :class="{ 'active': activeTab === 'team' }"
-          @click="activeTab = 'team'"
-        >
-          팀
-        </button>
-      </div>
-      
-      <div class="action-icons">
-        <button class="action-button" @click="toggleViewMode('list')">
-          <img src="@/assets/images/studentpdf-list.png" alt="리스트 보기" class="action-icon">
-        </button>
-        <button class="action-button" @click="toggleSelectMode">
-          <img src="@/assets/images/studentpdf-select.png" alt="선택 모드" class="action-icon">
-        </button>
-        <button class="action-button" @click="toggleOptionsMenu">
-          <img src="@/assets/images/studentpdf-setting.png" alt="삭제 옵션" class="action-icon">
-        </button>
-      </div>
-    </div>
-    
-    <div class="folder-grid" :class="{ 'list-view': viewMode === 'list' }">
-      <div class="folder-item add-folder" @click="handleAddClick">
-        <div class="add-icon">
-          <span class="plus-icon">+</span>
-        </div>
-        <div class="folder-name">추가</div>
-      </div>
-
-      <div 
-        v-for="folder in filteredFolders" 
-        :key="folder.id" 
-        class="folder-item" 
-        :class="{ 'list-view': viewMode === 'list', 'selected': selectMode && selectedItems.includes(folder.id) }"
-        @click="selectMode ? toggleItemSelection(folder.id) : openFolder(folder.id)"
-      >
-        <div class="item-checkbox" v-if="selectMode">
-          <input 
-            type="checkbox" 
-            :checked="selectedItems.includes(folder.id)" 
-            @click.stop="toggleItemSelection(folder.id)"
-          >
-        </div>
-        <div class="folder-icon">
-          <img src="@/assets/images/studentpdf-folder.png" alt="폴더" class="folder-image">
-        </div>
-        <div class="folder-name">{{ folder.name }}</div>
-      </div>
-
-      <div 
-        v-for="file in filteredFiles" 
-        :key="file.id" 
-        class="folder-item file-item" 
-        :class="{ 'list-view': viewMode === 'list', 'selected': selectMode && selectedItems.includes(file.id) }"
-        @click="selectMode ? toggleItemSelection(file.id) : openFile(file.id)"
-      >
-        <div class="item-checkbox" v-if="selectMode">
-          <input 
-            type="checkbox" 
-            :checked="selectedItems.includes(file.id)" 
-            @click.stop="toggleItemSelection(file.id)"
-          >
-        </div>
-        <div class="file-icon">
-          <img src="@/assets/images/studentpdf-file.png" alt="파일" class="file-image">
-        </div>
-        <div class="folder-name">{{ file.name }}</div>
-      </div>
-    </div>
-
-    <div class="folder-modal" v-if="showAddOptions">
-      <div class="modal-content options-modal">
-        <h3 class="options-title">추가하기</h3>
-        <div class="option-buttons">
-          <button @click="handleFileUpload" class="option-button">
-            <div class="option-icon file-option">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="12" y1="18" x2="12" y2="12"></line>
-                <line x1="9" y1="15" x2="15" y2="15"></line>
-              </svg>
-            </div>
-            <div class="option-text">
-              <span class="option-title">파일 업로드</span>
-              <span class="option-desc">PDF 파일을 업로드합니다</span>
-            </div>
-          </button>
-          <button @click="handleAddFolder" class="option-button">
-            <div class="option-icon folder-option">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                <line x1="12" y1="11" x2="12" y2="17"></line>
-                <line x1="9" y1="14" x2="15" y2="14"></line>
-              </svg>
-            </div>
-            <div class="option-text">
-              <span class="option-title">폴더 생성</span>
-              <span class="option-desc">새 폴더를 만듭니다</span>
-            </div>
-          </button>
-        </div>
-        <button @click="cancelAddOptions" class="close-options-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
+  <div class="pdf-viewer-container">
+    <div class="pdf-header">
+      <button class="back-button" @click="goBack">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>뒤로 가기</span>
+      </button>
+      <h2 class="pdf-title">{{ pdfName }}</h2>
+      <div class="pdf-controls">
+        <button class="control-button" @click="zoomIn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="11" y1="8" x2="11" y2="14"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
           </svg>
         </button>
+        <button class="control-button" @click="zoomOut">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
+          </svg>
+        </button>
+        <div class="page-controls">
+          <button class="control-button" @click="prevPage" :disabled="currentPage <= 1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+          <button class="control-button" @click="nextPage" :disabled="currentPage >= totalPages">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="folder-modal" v-if="showFileUploadModal">
-      <div class="modal-content upload-modal">
-        <h3 class="modal-title">파일 업로드</h3>
-        <div class="file-upload-area" :class="{ 'has-file': selectedFile }">
-          <input 
-            type="file" 
-            id="fileUpload" 
-            ref="fileInput"
-            @change="onFileSelected"
-            accept=".pdf"
-            class="file-input"
-          />
-          <label for="fileUpload" class="file-upload-label">
-            <div class="upload-icon">
-              <svg v-if="!selectedFile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <circle cx="12" cy="13" r="4"></circle>
-              </svg>
-            </div>
-            <div class="upload-text">
-              <span class="upload-title">{{ selectedFile ? '파일이 선택됨' : '파일을 드래그하거나 선택하세요' }}</span>
-              <span v-if="!selectedFile" class="upload-desc">PDF 파일만 가능합니다</span>
-              <span v-else class="selected-file">{{ selectedFile.name }}</span>
-            </div>
-          </label>
-        </div>
-        <div class="modal-buttons">
-          <button @click="cancelFileUpload" class="cancel-button">취소</button>
-          <button @click="uploadFile" class="create-button" :disabled="!selectedFile">
-            <svg v-if="!selectedFile" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="17 8 12 3 7 8"></polyline>
-              <line x1="12" y1="3" x2="12" y2="15"></line>
-            </svg>
-            <span>업로드</span>
-          </button>
-        </div>
-        <button @click="cancelFileUpload" class="close-modal-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+    <div class="pdf-container" ref="pdfContainer">
+      <div class="loading-indicator" v-if="loading">
+        <svg class="spinner" width="40" height="40" viewBox="0 0 50 50">
+          <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+        </svg>
+        <span>PDF 로딩 중...</span>
       </div>
-    </div>
-
-    <div class="folder-modal" v-if="showFolderModal">
-      <div class="modal-content folder-create-modal">
-        <h3 class="modal-title">새 폴더 생성</h3>
-        <div class="folder-input-container">
-          <div class="folder-icon-preview">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-            </svg>
-          </div>
-          <input 
-            type="text" 
-            v-model="newFolderName" 
-            placeholder="폴더 이름을 입력하세요"
-            class="folder-input"
-          />
-        </div>
-        <div class="modal-buttons">
-          <button @click="cancelAddFolder" class="cancel-button">취소</button>
-          <button @click="createFolder" class="create-button" :disabled="!newFolderName.trim()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>생성</span>
-          </button>
-        </div>
-        <button @click="cancelAddFolder" class="close-modal-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+      <div class="pdf-page-container">
+        <canvas ref="pdfCanvas" class="pdf-canvas"></canvas>
+        <div ref="textLayer" class="textLayer"></div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
 
+<script>
+import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 export default {
-  name: 'StudentPdfPage',
-  
+  name: 'PdfViewer',
+
   setup() {
     const router = useRouter();
-    const activeTab = ref('personal');
-    const showAddOptions = ref(false);
-    const showFolderModal = ref(false);
-    const showFileUploadModal = ref(false);
-    const showOptionsMenu = ref(false);
-    const newFolderName = ref('');
-    const selectedFile = ref(null);
-    const fileInput = ref(null);
-    const viewMode = ref('grid');
-    const selectMode = ref(false);
-    const selectedItems = ref([]);
-    
-    const folders = ref([
-      { id: 'school', name: '학교수업', type: 'personal' },
-      { id: 'personal', name: '개인공부', type: 'personal' },
-      { id: 'project', name: '프로젝트', type: 'personal' }
-    ]);
-    
-    const files = ref([
-      { id: 'file-1', name: '수학노트.pdf', type: 'personal' },
-      { id: 'file-2', name: '영어과제.pdf', type: 'personal' }
-    ]);
+    const route = useRoute();
 
-    const filteredFolders = computed(() => {
-      return folders.value.filter(folder => folder.type === activeTab.value);
-    });
-    
-    const filteredFiles = computed(() => {
-      return files.value.filter(file => file.type === activeTab.value);
-    });
+    const pdfContainer = ref(null);
+    const pdfCanvas = ref(null);
+    const textLayer = ref(null);
+    const pdfName = ref('');
+    const currentPage = ref(1);
+    const totalPages = ref(0);
+    const loading = ref(true);
+    const scale = ref(1.0);
 
-    const handleAddClick = () => {
-      showAddOptions.value = true;
-    };
-    
-    const cancelAddOptions = () => {
-      showAddOptions.value = false;
-    };
-    
-    const handleFileUpload = () => {
-      showAddOptions.value = false;
-      showFileUploadModal.value = true;
-    };
+    let pdfDoc = null;
+    let pageRendering = false;
+    let pageNumPending = null;
+    let pdfjsLib = window.pdfjsLib;
 
-    const handleAddFolder = () => {
-      showAddOptions.value = false;
-      showFolderModal.value = true;
-    };
-
-    const cancelAddFolder = () => {
-      showFolderModal.value = false;
-      newFolderName.value = '';
-    };
-
-    const createFolder = () => {
-      if (newFolderName.value.trim() !== '') {
-        const newId = 'folder-' + Date.now();
-        folders.value.push({
-          id: newId,
-          name: newFolderName.value.trim(),
-          type: activeTab.value
-        });
-        newFolderName.value = '';
-        showFolderModal.value = false;
+    // PDF.js 워커 설정
+    const setupPdfJs = () => {
+      if (!pdfjsLib) {
+        console.error('PDF.js 라이브러리가 로드되지 않았습니다.');
+        return false;
       }
+
+      // 워커 URL 설정
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+      
+      return true;
     };
-    
-    const onFileSelected = (event) => {
-      const files = event.target.files;
-      if (files.length > 0) {
-        selectedFile.value = files[0];
-      }
+
+    const goBack = () => {
+      router.push('/student/pdf');
     };
-    
-    const cancelFileUpload = () => {
-      showFileUploadModal.value = false;
-      selectedFile.value = null;
-      if (fileInput.value) {
-        fileInput.value.value = '';
-      }
-    };
-    
-    const uploadFile = () => {
-      if (selectedFile.value) {
-        const newId = 'file-' + Date.now();
-        files.value.push({
-          id: newId,
-          name: selectedFile.value.name,
-          type: activeTab.value,
-          data: selectedFile.value
+
+    const renderPage = (pageNum) => {
+      pageRendering = true;
+      loading.value = true;
+
+      pdfDoc.getPage(pageNum).then(function(page) {
+        const viewport = page.getViewport({ scale: scale.value });
+        const canvas = pdfCanvas.value;
+        const canvasContext = canvas.getContext('2d');
+        
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        // 텍스트 레이어 설정
+        const textLayerDiv = textLayer.value;
+        textLayerDiv.style.height = viewport.height + 'px';
+        textLayerDiv.style.width = viewport.width + 'px';
+        
+        // 캔버스에 페이지 렌더링
+        const renderContext = {
+          canvasContext: canvasContext,
+          viewport: viewport
+        };
+        
+        const renderTask = page.render(renderContext);
+        
+        // 텍스트 내용 가져오기
+        page.getTextContent().then(function(textContent) {
+          // 텍스트 레이어 초기화
+          textLayerDiv.innerHTML = '';
+          
+          // 텍스트 레이어 뷰포트 설정
+          textLayerDiv.style.left = canvas.offsetLeft + 'px';
+          textLayerDiv.style.top = canvas.offsetTop + 'px';
+          textLayerDiv.style.height = canvas.height + 'px';
+          textLayerDiv.style.width = canvas.width + 'px';
+          
+          // 텍스트 레이어 렌더링
+          // 주의: pdfjsLib.renderTextLayer가 아닌 직접 구현함
+          textContent.items.forEach(function(textItem) {
+            const tx = pdfjsLib.Util.transform(
+              viewport.transform,
+              textItem.transform
+            );
+            
+            const fontHeight = Math.sqrt((tx[2] * tx[2]) + (tx[3] * tx[3]));
+            const angle = Math.atan2(tx[1], tx[0]);
+            
+            const textDiv = document.createElement('span');
+            textDiv.textContent = textItem.str;
+            
+            // 스타일 적용
+            const style = textDiv.style;
+            style.left = tx[4] + 'px';
+            style.top = (tx[5] - fontHeight) + 'px';
+            style.fontSize = fontHeight + 'px';
+            style.fontFamily = textItem.fontName;
+            style.transform = 'rotate(' + angle + 'rad)';
+            style.position = 'absolute';
+            
+            // 텍스트가 선택 가능하도록 중요 속성 설정
+            style.color = 'transparent';
+            style.cursor = 'text';
+            style.whiteSpace = 'pre';
+            
+            textLayerDiv.appendChild(textDiv);
+          });
         });
         
-        showFileUploadModal.value = false;
-        selectedFile.value = null;
-        if (fileInput.value) {
-          fileInput.value.value = '';
-        }
+        renderTask.promise.then(function() {
+          pageRendering = false;
+          loading.value = false;
+          
+          if (pageNumPending !== null) {
+            renderPage(pageNumPending);
+            pageNumPending = null;
+          }
+        });
+      });
+
+      currentPage.value = pageNum;
+    };
+
+    const queueRenderPage = (pageNum) => {
+      if (pageRendering) {
+        pageNumPending = pageNum;
+      } else {
+        renderPage(pageNum);
       }
     };
 
-    const toggleViewMode = (mode) => {
-      viewMode.value = mode;
+    const prevPage = () => {
+      if (currentPage.value <= 1) return;
+      queueRenderPage(currentPage.value - 1);
     };
-    
-    const toggleSelectMode = () => {
-      selectMode.value = !selectMode.value;
-      if (!selectMode.value) {
-        selectedItems.value = [];
+
+    const nextPage = () => {
+      if (currentPage.value >= totalPages.value) return;
+      queueRenderPage(currentPage.value + 1);
+    };
+
+    const zoomIn = () => {
+      scale.value += 0.2;
+      queueRenderPage(currentPage.value);
+    };
+
+    const zoomOut = () => {
+      if (scale.value > 0.4) {
+        scale.value -= 0.2;
+        queueRenderPage(currentPage.value);
       }
     };
-    
-    const toggleOptionsMenu = () => {
-      showOptionsMenu.value = !showOptionsMenu.value;
+
+    const loadPDF = async (fileId) => {
+      if (!setupPdfJs()) {
+        alert('PDF.js 라이브러리를 로드할 수 없습니다.');
+        return;
+      }
+
+      loading.value = true;
+
+      try {
+        if (!fileId) {
+          alert('유효한 파일 ID가 없습니다.');
+          loading.value = false;
+          return;
+        }
+
+        const stored = localStorage.getItem(`pdfFile_${fileId}`);
+
+        if (stored) {
+          const fileInfo = JSON.parse(stored);
+          pdfName.value = fileInfo.name;
+
+          const base64Data = fileInfo.base64.split(',')[1]; // 헤더 제거
+          const binary = atob(base64Data);
+          const len = binary.length;
+          const uint8Array = new Uint8Array(len);
+
+          for (let i = 0; i < len; i++) {
+            uint8Array[i] = binary.charCodeAt(i);
+          }
+
+          const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
+          loadingTask.promise.then(function(pdfDocument) {
+            pdfDoc = pdfDocument;
+            totalPages.value = pdfDocument.numPages;
+            renderPage(1);
+          }, function(error) {
+            console.error('PDF 로딩 에러:', error);
+            alert('PDF를 표시할 수 없습니다: ' + error.message);
+            loading.value = false;
+          });
+        } else {
+          alert('PDF 정보를 찾을 수 없습니다.');
+          loading.value = false;
+        }
+      } catch (err) {
+        console.error('PDF 로딩 에러:', err);
+        alert('PDF를 표시할 수 없습니다: ' + err.message);
+        loading.value = false;
+      }
     };
-    
-    const toggleItemSelection = (itemId) => {
-      const index = selectedItems.value.indexOf(itemId);
-      if (index === -1) {
-        selectedItems.value.push(itemId);
+
+    onMounted(() => {
+      // PDF.js 라이브러리가 로드됐는지 확인
+      if (!window.pdfjsLib) {
+        // PDF.js 라이브러리를 동적으로 로드
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js';
+        script.onload = () => {
+          pdfjsLib = window.pdfjsLib;
+          const fileId = route.params.fileId;
+          loadPDF(fileId);
+        };
+        script.onerror = () => {
+          alert('PDF.js 라이브러리를 로드할 수 없습니다.');
+          loading.value = false;
+        };
+        document.head.appendChild(script);
       } else {
-        selectedItems.value.splice(index, 1);
+        pdfjsLib = window.pdfjsLib;
+        const fileId = route.params.fileId;
+        loadPDF(fileId);
       }
-    };
+    });
+
+    watch(() => route.params.fileId, (newId) => {
+      if (newId && pdfjsLib) {
+        loadPDF(newId);
+      }
+    });
     
-    const deleteSelectedItems = () => {
-      folders.value = folders.value.filter(folder => !selectedItems.value.includes(folder.id));
-      files.value = files.value.filter(file => !selectedItems.value.includes(file.id));
-      selectedItems.value = [];
-      showOptionsMenu.value = false;
-    };
-    
-    const openFolder = (folderId) => {
-      console.log(`Opening folder: ${folderId}`);
-    };
-    
-    const openFile = (fileId) => {
-      console.log(`Opening file: ${fileId}`);
-    };
+    onBeforeUnmount(() => {
+      // 메모리 정리
+      pdfDoc = null;
+    });
 
     return {
-      activeTab,
-      showAddOptions,
-      showFolderModal,
-      showFileUploadModal,
-      newFolderName,
-      selectedFile,
-      fileInput,
-      folders,
-      files,
-      filteredFolders,
-      filteredFiles,
-      handleAddClick,
-      handleFileUpload,
-      handleAddFolder,
-      cancelAddOptions,
-      cancelAddFolder,
-      cancelFileUpload,
-      createFolder,
-      onFileSelected,
-      uploadFile,
-      openFolder,
-      openFile,
-      viewMode,
-      selectMode,
-      selectedItems,
-      toggleViewMode,
-      toggleSelectMode,
-      toggleOptionsMenu,
-      toggleItemSelection,
-      deleteSelectedItems
+      pdfContainer,
+      pdfCanvas,
+      textLayer,
+      pdfName,
+      currentPage,
+      totalPages,
+      loading,
+      goBack,
+      prevPage,
+      nextPage,
+      zoomIn,
+      zoomOut
     };
   }
 };
 </script>
 
 <style scoped>
-.student-pdf-container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.top-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.tab-container {
-  display: flex;
-  border-radius: 8px;
-  overflow: hidden;
-  width: fit-content;
-}
-
-.action-icons {
-  display: flex;
-  gap: 10px;
-}
-
-.action-button {
-  display: flex;
-  align-items: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-}
-
-.action-icon {
-  width: 40%;
-  height: 40px;
-  background-color: transparent;
-}
-
-.tab-button {
-  padding: 10px 20px;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
-}
-
-.tab-button.active {
-  background-color: #f8b163;
-  color: white;
-}
-
-.tab-button:first-child {
-  border-radius: 8px 0 0 8px;
-}
-
-.tab-button:last-child {
-  border-radius: 0 8px 8px 0;
-}
-
-.folder-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.folder-grid:not(.list-view) {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-}
-
-.folder-grid.list-view {
+.pdf-viewer-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  height: 100vh;
+  background-color: #f5f5f5;
 }
 
-.file-type-select {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-.folder-item {
+.pdf-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  width: 100px;
-  margin: 0 auto;
+  padding: 15px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
-  padding: 8px;
-  border-radius: 8px;
+  z-index: 10;
 }
 
-.folder-item:hover {
-  transform: translateY(-3px);
-  background-color: #f8f9ff;
-}
-
-.folder-item.selected {
-  background-color: #e3f2fd;
-  border: 1px solid #64b5f6;
-}
-
-.folder-item.list-view {
-  flex-direction: row;
-  width: 100%;
-  padding: 10px 15px;
-  margin: 0;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 15px;
-}
-
-.folder-item.list-view:hover {
-  transform: none;
-  background-color: #f8f9ff;
-}
-
-.folder-item.list-view .folder-name {
-  text-align: left;
-  font-size: 14px;
-}
-
-.item-checkbox {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  z-index: 1;
-}
-
-.folder-item.list-view .item-checkbox {
-  position: static;
-  margin-right: 10px;
-}
-
-.folder-icon, .file-icon {
-  width: 40px;
-  height: 40px;
+.back-button {
   display: flex;
-  justify-content: center;
   align-items: center;
-  margin-bottom: 5px;
-}
-
-.folder-image, .file-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.add-icon {
-  width: 30px;
-  height: 30px;
-  background-color: #4d90fe;
-  color: white;
+  background: none;
+  border: none;
+  color: #333;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 8px 12px;
   border-radius: 6px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 5px;
+  transition: background-color 0.2s;
 }
 
-.plus-icon {
-  font-size: 20px;
-  font-weight: bold;
-  line-height: 1;
+.back-button svg {
+  margin-right: 8px;
 }
 
-.folder-name {
-  font-size: 13px;
+.back-button:hover {
+  background-color: #f0f0f0;
+}
+
+.pdf-title {
+  flex: 1;
+  margin: 0;
+  font-size: 18px;
   text-align: center;
   color: #333;
-  max-width: 90px;
+  padding: 0 20px;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.folder-modal {
-  position: fixed;
+.pdf-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-button {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #555;
+}
+
+.control-button:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.control-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+}
+
+.page-info {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  min-width: 60px;
+  text-align: center;
+}
+
+.pdf-container {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  justify-content: center; /* 가로 중앙 정렬 */
+  align-items: flex-start; /* 위쪽부터 시작하도록 변경 */
+  position: relative;
+  padding: 20px;
+}
+
+.pdf-page-container {
+  position: relative;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  /* 마진 제거 */
+}
+
+.pdf-canvas {
+  position: relative; /* absolute 대신 relative 사용 */
+  z-index: 1;
+}
+
+.textLayer {
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  opacity: 0.2;
+  line-height: 1.0;
+  z-index: 2;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
-.modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 400px;
-}
-
-.folder-input {
-  width: 100%;
-  padding: 10px;
-  margin: 15px 0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.options-modal {
-  position: relative;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.options-title {
-  text-align: center;
-  font-size: 22px;
-  margin-bottom: 25px;
-  color: #333;
-  font-weight: 600;
-}
-
-.option-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin: 15px 0;
-}
-
-.option-button {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  border: none;
-  border-radius: 12px;
-  background-color: #ffffff;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-  font-size: 16px;
-  text-align: left;
-  transition: all 0.3s ease;
-  border: 1px solid #f0f0f0;
-}
-
-.option-button:hover {
-  background-color: #f8f9ff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-}
-
-.option-icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  margin-right: 16px;
-}
-
-.file-option {
-  background-color: #e3f2fd;
-  color: #1976d2;
-}
-
-.folder-option {
-  background-color: #fff8e1;
-  color: #ffb300;
-}
-
-.option-icon svg {
-  width: 24px;
-  height: 24px;
-}
-
-.option-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.option-title {
-  font-weight: 600;
-  font-size: 16px;
-  margin-bottom: 4px;
-  color: #333;
-}
-
-.option-desc {
-  font-size: 13px;
-  color: #666;
-}
-
-.close-options-button {
+.textLayer > span {
+  color: transparent;
   position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #999;
-  padding: 5px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.2s;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
 }
 
-.close-options-button:hover {
-  background-color: #f5f5f5;
-  color: #333;
+/* 선택된 텍스트의 배경색 */
+::selection {
+  background: rgba(0, 100, 255, 0.3);
 }
 
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+/* Chrome, Edge, Safari용 */
+::-webkit-selection {
+  background: rgba(0, 100, 255, 0.3);
 }
 
-.cancel-button, .create-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.cancel-button {
-  background-color: #f5f5f5;
-  color: #666;
-}
-
-.cancel-button:hover {
-  background-color: #e8e8e8;
-  color: #333;
-}
-
-.create-button {
-  background-color: #4d90fe;
-  color: white;
-  box-shadow: 0 2px 5px rgba(77, 144, 254, 0.2);
-}
-
-.create-button:hover {
-  background-color: #3a7be0;
-  box-shadow: 0 4px 8px rgba(77, 144, 254, 0.3);
-  transform: translateY(-1px);
-}
-
-.create-button:disabled {
-  background-color: #a0c3ff;
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}
-
-/* 모달 공통 스타일 */
-.modal-title {
-  text-align: center;
-  font-size: 22px;
-  margin-bottom: 25px;
-  color: #333;
-  font-weight: 600;
-}
-
-.upload-modal, .folder-create-modal {
-  position: relative;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.close-modal-button {
+.loading-indicator {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #999;
-  padding: 5px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.2s;
-}
-
-.close-modal-button:hover {
-  background-color: #f5f5f5;
-  color: #333;
-}
-
-/* 파일 업로드 영역 스타일 */
-.file-upload-area {
-  margin: 20px 0 30px;
-  border: 2px dashed #ddd;
-  border-radius: 16px;
-  padding: 30px;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.file-upload-area:hover {
-  border-color: #4d90fe;
-  background-color: #f8f9ff;
-}
-
-.file-upload-area.has-file {
-  border-color: #4caf50;
-  background-color: #f1f8e9;
-}
-
-.file-input {
-  display: none;
-}
-
-.file-upload-label {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.upload-icon {
-  width: 60px;
-  height: 60px;
-  margin-bottom: 15px;
-  color: #4d90fe;
-}
-
-.file-upload-area.has-file .upload-icon {
-  color: #4caf50;
-}
-
-.upload-text {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.upload-title {
-  font-weight: 600;
-  font-size: 18px;
-  margin-bottom: 6px;
-  color: #333;
-}
-
-.upload-desc {
-  font-size: 14px;
+  gap: 15px;
   color: #666;
 }
 
-.selected-file {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #4caf50;
-  font-weight: 500;
-  word-break: break-all;
-  max-width: 280px;
+.spinner {
+  animation: rotate 2s linear infinite;
 }
 
-/* 폴더 생성 스타일 */
-.folder-input-container {
-  display: flex;
-  align-items: center;
-  margin: 25px 0 30px;
-  background-color: #f8f9ff;
-  border-radius: 12px;
-  padding: 5px;
-  border: 1px solid #e0e0e0;
+.spinner .path {
+  stroke: #4d90fe;
+  stroke-linecap: round;
+  animation: dash 1.5s ease-in-out infinite;
 }
 
-.folder-icon-preview {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #ffb300;
-  margin: 0 10px;
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
-.folder-input {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  background: transparent;
-  font-size: 16px;
-  outline: none;
-}
-
-.folder-input::placeholder {
-  color: #aaa;
-}
-
-
-@media (max-width: 768px) {
-  .folder-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
   }
 }
 </style>

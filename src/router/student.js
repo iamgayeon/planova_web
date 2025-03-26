@@ -30,6 +30,11 @@ export default [
         meta: { layout: 'StudentLayout' }
       },
       {
+        path: '/student/pdf/view/:fileId',
+        name: 'studentPdfView',
+        component: () => import('../pages/student/pdf/StudentPdfViewPage.vue'),
+      },
+      {
         path: 'myroom',
         name: 'studentMyroom',
         component: () => import('../pages/student/StudentMyroomPage.vue'),

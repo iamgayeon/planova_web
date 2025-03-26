@@ -302,22 +302,30 @@ export default {
     };
     
     const uploadFile = () => {
-      if (selectedFile.value) {
-        const newId = 'file-' + Date.now();
-        files.value.push({
-          id: newId,
-          name: selectedFile.value.name,
-          type: activeTab.value,
-          data: selectedFile.value
-        });
-        
-        showFileUploadModal.value = false;
-        selectedFile.value = null;
-        if (fileInput.value) {
-          fileInput.value.value = '';
-        }
-      }
+  if (selectedFile.value) {
+    const newId = 'file-' + Date.now();
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64Data = reader.result;
+
+      localStorage.setItem(`pdfFile_${newId}`, JSON.stringify({
+        name: selectedFile.value.name,
+        base64: base64Data
+      }));
+
+      files.value.push({
+        id: newId,
+        name: selectedFile.value.name,
+        type: activeTab.value
+      });
+
+      showFileUploadModal.value = false;
+      selectedFile.value = null;
+      if (fileInput.value) fileInput.value.value = '';
     };
+    reader.readAsDataURL(selectedFile.value); // ← base64로 읽기
+  }
+};
 
     const toggleViewMode = (mode) => {
       viewMode.value = mode;
@@ -355,7 +363,7 @@ export default {
     };
     
     const openFile = (fileId) => {
-      console.log(`Opening file: ${fileId}`);
+      router.push(`/student/pdf/view/${fileId}`);
     };
 
     return {
