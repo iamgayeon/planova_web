@@ -3,6 +3,7 @@ import HomePage from '../pages/HomePage.vue';
 import authRotes from './auth';
 import boardRotes from './board';
 import informationRoutes from './information';
+import eventRoutes from './event'
 import supportRoutes from './support';
 import StudentRoutes from './student';
 
@@ -17,6 +18,7 @@ const router = createRouter({
     ...authRotes,
     ...boardRotes,
     ...informationRoutes,
+    ...eventRoutes,
     ...supportRoutes,
     ...StudentRoutes
   ],

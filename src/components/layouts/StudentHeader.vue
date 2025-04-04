@@ -9,6 +9,14 @@ const logout = () => {
   localStorage.removeItem('isAuthenticated');
   router.push('/auth/login');
 };
+
+const goToPassPage = () => {
+  router.push('/information/pass');
+};
+
+const goToPartnershipPage = () => {
+  router.push('/information/partnership');
+};
 </script>
 
 <template>
@@ -17,8 +25,8 @@ const logout = () => {
     </div>
     <div class="right-section">
       <div class="header-links">
-        <a href="#" class="header-link">이용권 구매</a>
-        <a href="#" class="header-link">기업 제휴</a>
+        <router-link to="/information/pass" class="header-link">이용권 구매</router-link>
+        <router-link to="/information/partnership" class="header-link">기업 제휴</router-link>
       </div>
       <div class="user-profile-container" 
            @mouseover="showDropdown = true" 
@@ -100,6 +108,7 @@ const logout = () => {
   font-size: 14px;
   font-weight: 500;
   transition: color 0.2s ease;
+  cursor: pointer;
 }
 
 .header-link:hover {

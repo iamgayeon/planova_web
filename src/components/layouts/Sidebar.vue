@@ -147,25 +147,7 @@ const clearHovered = () => {
       </div>
         <div class="nav-text">마이룸</div>
       </div>
-      
-      <div 
-        class="nav-item" 
-        :class="{ active: currentMenu === 'faq' }"
-        @click="handleMenuClick('faq')"
-        @mouseenter="setHovered('faq')"
-        @mouseleave="clearHovered"
-      >
-      <div class="nav-icon">
-        <img 
-          :src="currentMenu === 'faq' || hoveredItem === 'faq'
-            ? '/sidebar-faq-click.png' 
-            : '/sidebar-faq.png'" 
-          class="icon-image"
-        />
-      </div>
-        <div class="nav-text">FAQ</div>
-      </div>
-      
+            
       <div 
         class="nav-item" 
         :class="{ active: currentMenu === 'support' }"
@@ -214,7 +196,7 @@ const clearHovered = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30px;
+  gap: 40px;
   width: 100%;
 }
 

@@ -41,12 +41,6 @@ export default [
         meta: { layout: 'StudentLayout' }
       },
       {
-        path: 'faq',
-        name: 'studentFaq',
-        component: () => import('../pages/student/StudentFaqPage.vue'),
-        meta: { layout: 'StudentLayout' }
-      },
-      {
         path: 'support',
         name: 'studentSupport',
         component: () => import('../pages/student/StudentSupportPage.vue'),
