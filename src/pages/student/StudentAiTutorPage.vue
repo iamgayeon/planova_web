@@ -37,7 +37,9 @@
   
     <div class="main-content">
       <div v-if="!currentChat" class="main-background">
-        <img src="@/assets/images/planova-small-logo.jpg" alt="배경" class="background-logo" />
+        <div class="logo-wrapper">
+          <img src="@/assets/images/planova-small-logo.jpg" alt="배경" class="background-logo" />
+        </div>
       </div>
 
       <div v-if="!currentChat" class="quick-actions">
@@ -260,20 +262,7 @@
       },
       
       adjustTextareaHeight() {
-        const textarea = this.$refs.questionTextarea;
-        textarea.style.height = 'auto';
-        
-        const rowHeight = 24;
-        const newRows = Math.min(
-          this.maxRows, 
-          Math.max(
-            this.minRows, 
-            Math.ceil(textarea.scrollHeight / rowHeight)
-          )
-        );
-        
-        this.questionRows = newRows;
-        textarea.style.height = `${Math.min(textarea.scrollHeight, rowHeight * this.maxRows)}px`;
+        // 자동 높이 조정 비활성화
       },
       
       startNewChat() {
@@ -462,6 +451,22 @@
   </script>
   
   <style scoped>
+.main-background {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 0;
+  background-color: #f8f9fa;
+  height: 420px;
+}
+.logo-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
   .student-ai-tutor-container {
     display: flex;
     height: 100vh;
@@ -583,9 +588,9 @@
 .main-content {
   flex: 1;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   height: 100%;
-  overflow: hidden;
+  overflow: hidden auto;
   padding: 30px;
 }
   
@@ -675,11 +680,10 @@
 }
 
   .chat-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    min-height: 400px;
+     flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
   }
 
   .chat-inner {
@@ -773,7 +777,8 @@
   flex-direction: column;
   gap: 15px;
   justify-content: flex-end;
-  min-height: 120px;
+  min-height: 100px;
+  margin-top: 0;
 }
   
   .question-input-area {
@@ -784,15 +789,15 @@
     width: 100%;
     border: none;
     outline: none;
-    resize: none;
+    resize: vertical;
     font-size: 15px;
     line-height: 1.5;
     font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-    overflow: hidden;
     padding: 12px;
     border-radius: 8px;
     transition: all 0.2s;
     background-color: #f9f9f9;
+    height: 80px;
   }
   
   .question-input:focus {
@@ -1024,15 +1029,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: 40px 0;
   z-index: 0;
   background-color: #f8f9fa;
   min-height: 300px;
 }
 
-  .background-logo {
-    max-width: 260px;
+.background-logo {
+    max-width: 500px;
     opacity: 0.2;
-  }
+}
 
 </style>
