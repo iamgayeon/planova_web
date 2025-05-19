@@ -5,20 +5,153 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const isLoading = ref(false);
 
+// 환경변수에서 카카오 키 읽기 (Vite 방식과 Vue 방식 모두 시도)
+const KAKAO_KEY = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY || 
+                  import.meta.env.VUE_APP_KAKAO_JAVASCRIPT_KEY || 
+                  'f4c7f7a5fe0b155d15b0fc65f67f94ec'; // 백업용 키
+
+console.log('환경변수 확인:');
+console.log('VITE_KAKAO_JAVASCRIPT_KEY:', import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY);
+console.log('VUE_APP_KAKAO_JAVASCRIPT_KEY:', import.meta.env.VUE_APP_KAKAO_JAVASCRIPT_KEY);
+console.log('최종 사용 키:', KAKAO_KEY);
+
+// 디버그용 변수
+const debug = ref({
+  kakaoKey: KAKAO_KEY,
+  isKakaoLoaded: false,
+  isInitialized: false
+});
+
+// 카카오 SDK 초기화
+onMounted(async () => {
+  console.log('=== 디버그 정보 ===');
+  console.log('카카오 키:', debug.value.kakaoKey);
+  console.log('window.Kakao 존재 여부:', !!window.Kakao);
+  
+  // 카카오 SDK가 로드될 때까지 기다림
+  let retryCount = 0;
+  const maxRetries = 10;
+  
+  const waitForKakao = () => {
+    return new Promise((resolve) => {
+      const checkKakao = () => {
+        if (window.Kakao && window.Kakao.isInitialized !== undefined) {
+          resolve(true);
+        } else if (retryCount < maxRetries) {
+          retryCount++;
+          console.log(`카카오 SDK 로딩 대기 중... (${retryCount}/${maxRetries})`);
+          setTimeout(checkKakao, 100);
+        } else {
+          resolve(false);
+        }
+      };
+      checkKakao();
+    });
+  };
+  
+  const kakaoLoaded = await waitForKakao();
+  
+  if (kakaoLoaded && window.Kakao) {
+    debug.value.isKakaoLoaded = true;
+    
+    // 이제 안전하게 isInitialized 호출 가능
+    if (window.Kakao.isInitialized && !window.Kakao.isInitialized()) {
+      console.log('카카오 SDK 초기화 중... 키:', KAKAO_KEY);
+      
+      if (KAKAO_KEY === '카카오_JavaScript_키를_여기에_입력') {
+        console.error('⚠️ 실제 카카오 키를 설정해주세요!');
+        alert('카카오 키가 설정되지 않았습니다. 코드에서 KAKAO_KEY 변수에 실제 키를 입력해주세요.');
+        return;
+      }
+      
+      try {
+        window.Kakao.init(KAKAO_KEY);
+        debug.value.isInitialized = true;
+        console.log('✅ 카카오 SDK 초기화 성공');
+      } catch (error) {
+        console.error('❌ 카카오 SDK 초기화 실패:', error);
+        alert('카카오 SDK 초기화에 실패했습니다. 키를 확인해주세요.');
+      }
+    } else if (window.Kakao.isInitialized && window.Kakao.isInitialized()) {
+      debug.value.isInitialized = true;
+      console.log('✅ 카카오 SDK 이미 초기화됨');
+    }
+  } else {
+    console.error('❌ 카카오 SDK가 로드되지 않았습니다.');
+  }
+});
+
 const login = async () => {
+  console.log('=== 로그인 시도 ===');
+  console.log('카카오 로드 여부:', debug.value.isKakaoLoaded);
+  console.log('카카오 초기화 여부:', debug.value.isInitialized);
+  
+  if (!window.Kakao) {
+    alert('카카오 SDK가 로드되지 않았습니다.');
+    return;
+  }
+  
+  if (!window.Kakao.isInitialized()) {
+    alert('카카오 SDK가 초기화되지 않았습니다.');
+    return;
+  }
+  
   try {
     isLoading.value = true;
     
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    localStorage.setItem('isAuthenticated', 'true');
-    
-    router.push({ name: 'studentMain' });
+    // 카카오 로그인 실행
+    window.Kakao.Auth.login({
+      success: async (authObj) => {
+        console.log('카카오 로그인 성공', authObj);
+        
+        // 사용자 정보 요청
+        window.Kakao.API.request({
+          url: '/v2/user/me',
+          success: (userData) => {
+            console.log('사용자 정보', userData);
+            
+            // 로그인 정보 저장
+            localStorage.setItem('isAuthenticated', 'true');
+            localStorage.setItem('kakaoToken', authObj.access_token);
+            localStorage.setItem('userInfo', JSON.stringify(userData));
+            
+            // 학생 메인 페이지로 이동
+            router.push({ name: 'studentMain' });
+          },
+          fail: (error) => {
+            console.error('사용자 정보 요청 실패', error);
+            alert('사용자 정보를 가져오는데 실패했습니다.');
+          }
+        });
+      },
+      fail: (error) => {
+        console.error('카카오 로그인 실패', error);
+        alert('로그인에 실패했습니다. 다시 시도해주세요.');
+      }
+    });
   } catch (error) {
     console.error('로그인 실패:', error);
-    
+    alert('로그인 중 오류가 발생했습니다: ' + error.message);
   } finally {
     isLoading.value = false;
+  }
+};
+
+// 카카오 로그아웃 (옵션)
+const logout = () => {
+  if (window.Kakao?.Auth.getAccessToken()) {
+    window.Kakao?.API.request({
+      url: '/v1/user/unlink',
+      success: () => {
+        console.log('카카오 로그아웃 성공');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('kakaoToken');
+        localStorage.removeItem('userInfo');
+      },
+      fail: (error) => {
+        console.error('카카오 로그아웃 실패', error);
+      }
+    });
   }
 };
 </script>
@@ -42,6 +175,15 @@ const login = async () => {
           <span class="highlight">학습의 여정을 시작하세요!</span>
         </h1>
         
+        <!-- 디버그 정보 (개발 중에만 표시)
+        <div class="debug-info">
+          <small>
+            카카오 키: {{ debug.kakaoKey ? '설정됨 ✓' : '설정 안됨 ✗' }}<br>
+            SDK 로드: {{ debug.isKakaoLoaded ? '✓' : '✗' }}<br>
+            초기화: {{ debug.isInitialized ? '✓' : '✗' }}
+          </small>
+        </div> -->
+        
         <form @submit.prevent="login">
           <div class="kakao-button-container">
             <img 
@@ -49,7 +191,7 @@ const login = async () => {
               alt="카카오 로그인" 
               class="kakao-login-image" 
               @click="login"
-              :class="{ 'disabled': isLoading }"
+              :class="{ 'disabled': isLoading || !debug.isInitialized }"
             />
             <div v-if="isLoading" class="loading-overlay">
               <div class="loading-spinner"></div>
@@ -91,9 +233,20 @@ const login = async () => {
       </div>
     </div>
   </div>
-</template>  
+</template>
 
 <style scoped>
+.debug-info {
+  background-color: #f0f8ff;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .login-container {
   display: flex;
   justify-content: center;

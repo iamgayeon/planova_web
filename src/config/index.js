@@ -6,8 +6,8 @@ export default {
       url: '/',
     },
     {
-      title: '이용권 구매',
-      url: '/information/pass',
+      title: '플래닛 구매',
+      url: '/information/planet',
     },
     {
       title: '이벤트',

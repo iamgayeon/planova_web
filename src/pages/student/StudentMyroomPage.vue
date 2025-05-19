@@ -39,22 +39,7 @@
         {{ toastMessage }}
       </div>
     </div>
-
-    <div class="user-info">
-      <div class="info-item">
-        <div class="info-label">프리미엄 이용권</div>
-        <div class="info-value">2025.02.08 ~ 2025.03.07</div>
-      </div>
-      <div class="info-item border-x">
-        <div class="info-label">포인트</div>
-        <div class="info-value">0P</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">쿠폰</div>
-        <div class="info-value">0개</div>
-      </div>
-    </div>
-
+    
     <div class="menu-section">
       <div class="menu-card">
         <div class="menu-header">
@@ -62,14 +47,14 @@
           <div class="menu-title">학습</div>
         </div>
         <div class="menu-links">
-          <a href="#" class="menu-link">
+          <div class="menu-link" @click="navigateToPdf('personal')">
             <span>생성된 문제(5)</span>
             <span class="arrow">›</span>
-          </a>
-          <a href="#" class="menu-link">
-            <span>생성된 오답 파일(2)</span>
+          </div>
+          <div class="menu-link" @click="navigateToPdf('personal')">
+            <span>생성된 요약 파일(2)</span>
             <span class="arrow">›</span>
-          </a>
+          </div>
         </div>
       </div>
 
@@ -79,40 +64,13 @@
           <div class="menu-title">팀스페이스</div>
         </div>
         <div class="menu-links">
-          <a href="#" class="menu-link">
+        <div class="menu-link" @click="navigateToPdf('team')">
             <span>나의 팀스페이스(1)</span>
             <span class="arrow">›</span>
-          </a>
+        </div>
         </div>
       </div>
-    </div>
-
-    <div class="stats-section">
-      <div class="stat-card">
-        <div class="stat-chart">
-          <CircleProgress :percentage="27" color="#FF8A80" />
-          <div class="stat-percentage">27%</div>
-        </div>
-        <div class="stat-label">사용한 LLM 용량</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-chart">
-          <CircleProgress :percentage="75" color="#FFD54F" />
-          <div class="stat-percentage">75%</div>
-        </div>
-        <div class="stat-label">오답 가능한 파일 용량</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-chart">
-          <CircleProgress :percentage="75" color="#81C784" />
-          <div class="stat-percentage">75%</div>
-        </div>
-        <div class="stat-label">생성한 문제 수</div>
-      </div>
-    </div>
-    
+    </div>    
     <div class="achievement-section">
       <h3 class="section-title">내 달성 과제</h3>
       <div class="achievements">
@@ -150,6 +108,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
+import LineChart from '@/components/LineChart.vue';
 const currentDay = ref(1);
 const consecutiveDays = ref(1);
 const attendanceStatus = reactive({
@@ -161,6 +120,14 @@ const attendanceStatus = reactive({
 const today = new Date();
 const dateFormatOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
 const formattedToday = today.toLocaleDateString('ko-KR', dateFormatOptions);
+
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
+const navigateToPdf = (tabType = 'personal') => {
+  router.push({ path: '/student/pdf', query: { tab: tabType } });
+};
+
 const checkAttendance = () => {
   if (!attendanceStatus.canCheckToday) {
     showToast("오늘은 이미 출석체크를 완료했습니다!");
@@ -176,9 +143,7 @@ const checkAttendance = () => {
     attendanceStatus.lastCheckDate = new Date().toISOString();
     attendanceStatus.canCheckToday = false;
     progressFillWidth.value = `${(nextDay - 1) * 16.66}%`;
-    
-    showToast("출석 체크 완료! " + nextDay + "일차 달성!");
-  
+      
     saveAttendanceData();
   }
 };
@@ -623,6 +588,7 @@ const CircleProgress = {
   padding: 8px 0;
   border-bottom: 1px solid #f0f0f0;
   transition: all 0.2s ease;
+  cursor: pointer; /* 클릭 가능한 커서 스타일 추가 */
 }
 
 .menu-link:last-child {
@@ -748,17 +714,17 @@ const CircleProgress = {
 
 .book-icon {
   background-color: rgba(255, 193, 7, 0.15);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFC107'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 16v-3H9v-2h2V9H9V7h4v8l2-2v2l-4 3z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23FFC107' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'%3E%3C/path%3E%3Cpath d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'%3E%3C/path%3E%3C/svg%3E");
 }
 
 .chat-icon {
   background-color: rgba(33, 150, 243, 0.15);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232196F3'%3E%3Cpath d='M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%232196F3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'%3E%3C/path%3E%3C/svg%3E");
 }
 
 .doc-icon {
   background-color: rgba(76, 175, 80, 0.15);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234CAF50'%3E%3Cpath d='M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-5V3.5L18.5 9H13z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234CAF50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'%3E%3C/path%3E%3Cpolyline points='14 2 14 8 20 8'%3E%3C/polyline%3E%3Cline x1='16' y1='13' x2='8' y2='13'%3E%3C/line%3E%3Cline x1='16' y1='17' x2='8' y2='17'%3E%3C/line%3E%3Cpolyline points='10 9 9 9 8 9'%3E%3C/polyline%3E%3C/svg%3E");
 }
 
 .achievement-text {

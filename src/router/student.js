@@ -32,7 +32,7 @@ export default [
       {
         path: '/student/pdf/view/:fileId',
         name: 'studentPdfView',
-        component: () => import('../pages/student/pdf/StudentPdfViewPage.vue'),
+        component: () => import('../pages/student/pdfviewer/PdfViewer.vue'),
       },
       {
         path: 'myroom',

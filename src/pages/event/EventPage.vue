@@ -484,7 +484,7 @@ onMounted(() => {
   width: auto;
   height: auto;
   display: block;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .special-info, .invite-info {

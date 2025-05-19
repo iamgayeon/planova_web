@@ -1,5 +1,53 @@
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .task-context-modal {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 0;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    width: 240px;
+  }
+  
+  .task-context-modal .context-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .task-context-modal .context-menu-item:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .task-context-modal .context-menu-item svg {
+    color: #666;
+  }
+  
+  .task-context-modal .context-menu-item.delete {
+    color: #e53935;
+  }
+  
+  .task-context-modal .context-menu-item.delete svg {
+    color: #e53935;
+  }
 <template>
-    <div class="student-calendar-page">
+  <div class="student-calendar-page two-column-layout">
+    <!-- 왼쪽: 캘린더 -->
+    <div class="left-column">
       <div class="calendar-container">
         <div class="calendar-header">
           <h2>{{ currentYear }}년 {{ currentMonth }}월</h2>
@@ -8,12 +56,12 @@
             <button @click="nextMonth" class="nav-btn"><span>&gt;</span></button>
           </div>
         </div>
-  
+
         <div class="calendar-grid">
           <div class="weekdays">
             <div v-for="day in weekdays" :key="day" class="weekday" :class="{ 'weekend': day === '일' || day === '토' }">{{ day }}</div>
           </div>
-          
+
           <div class="days">
             <div 
               v-for="day in calendarDays" 
@@ -36,20 +84,24 @@
           </div>
         </div>
       </div>
-  
+    </div>
+
+    <!-- 오른쪽: 일정 + 목표 -->
+    <div class="right-column">
       <div class="schedule-section" v-if="selectedDay">
         <div class="schedule-header">
           <h3>오늘 일정</h3>
           <div class="date">{{ formatSelectedDate }}</div>
         </div>
         <div class="divider"></div>
-        
+
         <div v-if="selectedDayTasks.length === 0" class="empty-tasks">
           <p>등록된 일정이 없습니다.</p>
         </div>
-        
-        <div class="schedule-list">
-          <div v-for="(task, index) in selectedDayTasks" :key="index" class="task-item">
+
+        <div class="schedule-list scrollable-tasks">
+        <div style="position: relative;">
+          <div v-for="(task, index) in selectedDayTasks" :key="index" class="task-item" @contextmenu.prevent="openTaskContextMenu($event, task.id)">
             <div class="task-dot" :class="{ 'completed': task.completed }"></div>
             <div class="task-content">{{ task.title }}</div>
             <div class="task-status">
@@ -62,10 +114,30 @@
                 </svg>
               </div>
             </div>
-          </div>
+</div>
+  <div v-if="showTaskContextMenu" class="modal-overlay" @click.self="showTaskContextMenu = false">
+    <div class="task-context-modal">
+      <div class="context-menu-item" @click="editTask(contextTaskId)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
+        <span>이름 변경</span>
+      </div>
+      <div class="context-menu-item delete" @click="deleteTask(contextTaskId)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          <line x1="10" y1="11" x2="10" y2="17"></line>
+          <line x1="14" y1="11" x2="14" y2="17"></line>
+        </svg>
+        <span>삭제</span>
+      </div>
+    </div>
+  </div>
         </div>
-        
-        <!-- 일정 추가 폼 -->
+        </div>
+
         <div class="add-task-form" v-if="showTaskForm">
           <input 
             type="text" 
@@ -79,25 +151,26 @@
             <button class="add-btn" @click="addTask" :disabled="!newTaskText.trim()">추가</button>
           </div>
         </div>
-        
+
         <button v-else class="add-task-btn" @click="showAddTaskForm">
           <span class="plus-icon">+</span> 일정 추가하기
         </button>
       </div>
-  
+
       <div class="monthly-summary">
         <div class="summary-header">
           <h3>이번 주 목표</h3>
           <div class="week-indicator">{{ currentMonth }}월 {{ currentWeek }}주차</div>
         </div>
         <div class="divider"></div>
-        
+
         <div v-if="weeklyGoals.length === 0" class="empty-goals">
           <p>이번 주 목표가 없습니다.</p>
         </div>
-        
+
         <div class="goals-list">
-          <div v-for="(goal, index) in weeklyGoals" :key="index" class="goal-item">
+          <div v-for="(goal, index) in weeklyGoals" :key="index" class="goal-item" @contextmenu.prevent="deleteGoal(goal.id)">
+            <div class="goal-dot" :class="{ 'completed': goal.completed }"></div>
             <div class="goal-content">{{ goal.title }}</div>
             <div class="goal-status">
               <div 
@@ -108,11 +181,11 @@
                   <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" fill="white"/>
                 </svg>
               </div>
+              <button class="delete-goal-btn" @click="deleteGoal(goal.id)">삭제</button>
             </div>
           </div>
         </div>
-        
-        <!-- 목표 추가 폼 -->
+
         <div class="add-goal-form" v-if="showGoalForm">
           <input 
             type="text" 
@@ -126,15 +199,16 @@
             <button class="add-btn" @click="addGoal" :disabled="!newGoalText.trim()">추가</button>
           </div>
         </div>
-        
+
         <button v-else class="add-task-btn" @click="showAddGoalForm">
           <span class="plus-icon">+</span> 목표 추가하기
         </button>
       </div>
     </div>
-  </template>
-  
-  <script>
+  </div>
+</template>
+
+<script>
   export default {
     name: 'StudentCalendarPage',
     data() {
@@ -169,29 +243,18 @@
           }
         ],
         weeklyGoals: [
-          {
-            id: 1,
-            week: 1,
-            month: 2,
-            year: 2025,
-            title: '데이터베이스 이론 정리하기',
-            completed: false
-          },
-          {
-            id: 2,
-            week: 1,
-            month: 2,
-            year: 2025,
-            title: '알고리즘 5문제 풀기',
-            completed: true
-          }
+         
         ],
         showTaskForm: false,
         newTaskText: '',
         showGoalForm: false,
         newGoalText: '',
         nextTaskId: 5,
-        nextGoalId: 3
+        nextGoalId: 3,
+        showTaskContextMenu: false,
+        contextTaskId: null,
+        contextMenuX: 0,
+        contextMenuY: 0
       };
     },
     computed: {
@@ -202,10 +265,14 @@
         return this.currentDate.getMonth() + 1; // JavaScript는 0부터 시작하므로 +1
       },
       currentWeek() {
-        // 현재 주차 계산 로직
-        const firstDayOfMonth = new Date(this.currentYear, this.currentMonth - 1, 1);
-        const dayOfWeek = firstDayOfMonth.getDay();
-        return Math.ceil((this.selectedDate.getDate() + dayOfWeek) / 7);
+        const year = this.selectedDate.getFullYear();
+        const month = this.selectedDate.getMonth(); // 0-based
+        const date = this.selectedDate.getDate();
+
+        const firstDayOfMonth = new Date(year, month, 1);
+        const firstDayWeekday = firstDayOfMonth.getDay(); // 요일 (0: 일, ..., 6: 토)
+
+        return Math.ceil((date + firstDayWeekday) / 7);
       },
       calendarDays() {
         const year = this.currentDate.getFullYear();
@@ -356,6 +423,30 @@
       },
       toggleGoalStatus(goal) {
         goal.completed = !goal.completed;
+      },
+      deleteGoal(goalId) {
+        this.weeklyGoals = this.weeklyGoals.filter(goal => goal.id !== goalId);
+      },
+      deleteTask(taskId) {
+        this.tasks = this.tasks.filter(task => task.id !== taskId);
+      },
+      openTaskContextMenu(event, taskId) {
+        this.contextTaskId = taskId;
+        this.contextMenuX = event.clientX + 12;
+        this.contextMenuY = event.clientY + 12;
+        this.showTaskContextMenu = true;
+      },
+      editTask(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (task) {
+          this.newTaskText = task.title;
+          this.deleteTask(taskId);
+          this.showTaskForm = true;
+          this.$nextTick(() => {
+            this.$refs.taskInput.focus();
+          });
+        }
+        this.showTaskContextMenu = false;
       }
     }
   };
@@ -363,11 +454,8 @@
   
   <style scoped>
   .student-calendar-page {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-    color: #333;
+    padding: 40px 40px;
+    background-color: #fafafa;
   }
   
   .calendar-container {
@@ -376,6 +464,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     padding: 24px;
     margin-bottom: 24px;
+    height: 550px;
   }
   
   .calendar-header {
@@ -416,6 +505,26 @@
   .nav-btn span {
     font-size: 18px;
     color: #555;
+  }
+
+  .two-column-layout {
+    display: flex;
+    gap: 24px;
+  }
+  
+  .left-column {
+  flex: 1.2;
+  min-width: 360px;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+}
+  
+  .right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
   
   .calendar-grid {
@@ -478,8 +587,8 @@
   }
   
   .day.today .day-number {
-    background-color: #ffdd00;
-    color: white;
+    background-color:#0000;
+    color: black;
     border-radius: 50%;
     width: 28px;
     height: 28px;
@@ -491,6 +600,10 @@
   
   .day.weekend:not(.other-month) .day-number {
     color: #ff6b6b;
+  }
+
+  .day.selected.weekend .day-number {
+    color: white;
   }
   
   .day.selected {
@@ -523,7 +636,13 @@
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     padding: 24px;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
+  }
+
+  .schedule-section {
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
   }
   
   .schedule-header, .summary-header {
@@ -700,6 +819,10 @@
     .student-calendar-page {
       padding: 10px;
     }
+
+    .two-column-layout {
+      flex-direction: column;
+    }
     
     .calendar-container, .schedule-section, .monthly-summary {
       padding: 16px;
@@ -722,4 +845,92 @@
       width: 100%;
     }
   }
+
+  .goal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #f58736;
+    margin-right: 16px;
+    flex-shrink: 0;
+  }
+
+  .goal-dot.completed {
+    background-color: #ccc;
+  }
+
+  .goal-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .delete-goal-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .delete-goal-btn:hover {
+    color: #e53935;
+  }
+
+  .goals-list {
+    max-height: 240px;
+    overflow-y: auto;
+  }
+
+  .scrollable-tasks {
+    max-height: 120px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+  }
+
   </style>
+    mounted() {
+      window.addEventListener('click', () => {
+        this.showTaskContextMenu = false;
+      });
+    },
+  /* .task-context-menu {
+    position: fixed;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    z-index: 999;
+    width: 160px;
+    padding: 8px 0;
+    pointer-events: auto;
+  } */
+  
+  .context-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #333;
+    transition: background-color 0.2s;
+  }
+
+  .context-menu-item:hover {
+    background-color: #f5f5f5;
+  }
+
+  .context-menu-item svg {
+    flex-shrink: 0;
+    color: #666;
+  }
+
+  .context-menu-item.delete {
+    color: #e53935;
+  }
+
+  .context-menu-item.delete svg {
+    color: #e53935;
+  }

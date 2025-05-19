@@ -1,7 +1,7 @@
 export default [
   {
-    path: '/information/pass',
-    name: 'information/pass',
+    path: '/information/planet',
+    name: 'information/planet',
     component: () => import('../pages/information/InformationPage.vue'),
   },
   {

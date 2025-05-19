@@ -11,11 +11,16 @@ const logout = () => {
 };
 
 const goToPassPage = () => {
-  router.push('/information/pass');
+  router.push('/information/planet');
 };
 
 const goToPartnershipPage = () => {
   router.push('/information/partnership');
+};
+
+// New function to navigate to PDF page
+const goToPdfPage = () => {
+  router.push('/student/pdf');
 };
 </script>
 
@@ -25,12 +30,12 @@ const goToPartnershipPage = () => {
     </div>
     <div class="right-section">
       <div class="header-links">
-        <router-link to="/information/pass" class="header-link">이용권 구매</router-link>
+        <router-link to="/information/planet" class="header-link">플래닛 구매</router-link>
         <router-link to="/information/partnership" class="header-link">기업 제휴</router-link>
       </div>
-      <div class="user-profile-container" 
-           @mouseover="showDropdown = true" 
-           @mouseleave="showDropdown = false">
+      <div class="user-profile-container"
+            @mouseover="showDropdown = true"
+            @mouseleave="showDropdown = false">
         <div class="user-profile">
           <img src="@/assets/images/student-profile.png" alt="프로필" class="profile-image" />
         </div>
@@ -40,27 +45,12 @@ const goToPartnershipPage = () => {
             <div class="user-name">한가연</div>
             <div class="user-email">iamgayeonii@gmail.com</div>
           </div>
-
+          
           <div class="menu-items">
             <div class="menu-item">
-              <div class="item-name">내 이용권</div>
-              <div class="item-value"> 보유한 이용권이 없습니다.
-              </div>
-            </div>
-            
-            <div class="menu-item">
-              <div class="item-name">포인트</div>
+              <div class="item-name">플래닛</div>
               <div class="item-value">
-                <span class="point-value">110,000P</span>
-                <span class="arrow-icon">›</span>
-              </div>
-            </div>
-            
-            <div class="menu-item">
-              <div class="item-name">쿠폰</div>
-              <div class="item-value">
-                <span>0</span>
-                <span class="arrow-icon">›</span>
+                보유 중인 플래닛이 없습니다
               </div>
             </div>
           </div>

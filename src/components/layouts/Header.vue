@@ -4,7 +4,7 @@ import config from '@/config';
 
 <template>
   <div class="banner-wrapper">
-    <div class="top-banner">지금 가입하고 프리미엄 기능을 <span class="highlight">무료 체험</span> 해보세요!</div>
+    <div class="top-banner">지금 가입하면 즉시 사용 가능한<span class="highlight"> 100플래닛 </span> 제공</div>
   </div>
 </template>
 

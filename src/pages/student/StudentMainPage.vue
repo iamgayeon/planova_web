@@ -3,39 +3,50 @@
     <div class="page-container">
       <div class="left-section">
         <div class="offer-card">
-          <div class="special-offer-badge">
-            오픈특가 한정
+          <div class="limited-time-banner">
+            <div class="countdown-text">한정 기간 이벤트!</div>
           </div>
-          <div class="offer-header">
-            <div class="offer-title">프리미엄 이용권 1개월</div>
-            <div class="bonus-info">
-              <div class="plus-icon">+</div>
-              <div>이용권 1개월(30일) 추가제공</div>
-            </div>
+          <!-- 이벤트 이미지 컨테이너에 스포트라이트 효과 추가 -->
+          <div class="event-image-container spotlight-container">
+            <div class="spotlight-effect"></div>
+            <img src="@/assets/images/planova_open_event.png" alt="플래노바 오픈 이벤트" class="event-image">
           </div>
           
-          <div class="price-info">
-            <div class="original-price">정가 <span class="price-strike">59,800원</span></div>
-            <div class="discount-price">
-              <div class="discount-badge">50%</div>
-              <div class="final-price">
-                할인가 <span class="price-highlight">29,900원</span>
-              </div>
+          <!-- 플래닛 수량 표시 섹션 개선 -->
+          <div class="credit-breakdown">
+            <div class="credit-item">
+              <div class="credit-amount">300플래닛</div>
+              <div class="credit-label">기본 제공</div>
+            </div>
+            <div class="plus-divider">+</div>
+            <div class="credit-item bonus highlight-bonus">
+              <div class="bonus-badge">BONUS</div>
+              <div class="credit-amount">100플래닛</div>
+              <div class="credit-label">보너스 제공</div>
+            </div>
+            <div class="equals-divider">=</div>
+            <div class="credit-item total">
+              <div class="credit-amount glow-text">400플래닛</div>
+              <div class="credit-label">총 플래닛</div>
             </div>
           </div>
         </div>
-        <button class="purchase-button">
-          이용권 구매하기
-        </button>
-                
+        
+        <!-- 버튼 개선 - 움직이는 애니메이션 추가 -->
+        <router-link to="/information/planet" class="purchase-button-link">
+          <button class="purchase-button">
+            <div class="button-content">
+              <span class="button-text">플래닛 구매하기</span>
+              <span class="button-icon">→</span>
+            </div>
+            <div class="button-shine"></div>
+          </button>
+        </router-link>
       </div>
       
       <div class="right-section">
+        <!-- 나머지 내용은 그대로 유지 -->
         <div class="user-info-card">
-          <h2 class="greeting">안녕하세요 한가연님!</h2>
-          <div class="subscription-info">PLANOVA와 함께 1일째</div>
-          
-          <!-- v-calendar 컴포넌트 -->
           <div class="calendar-container">
             <v-calendar 
               :attributes="calendarAttributes"
@@ -47,42 +58,35 @@
               color="indigo"
               :masks="masks"
             />
+            <!-- 개선된 "오늘 일정이 없습니다" 메시지 -->
+            <div v-if="!hasTodayEvent" class="no-event-message">
+              <a href="/student/calendar" class="no-event-link">
+                <span class="no-event-icon">📅</span>
+                <span class="no-event-text">
+                  <strong>오늘</strong>은 등록된 일정이 없습니다.<br>
+                  새로운 일정을 추가해보세요!
+                </span>
+                <button class="no-event-button">일정 등록하기</button>
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
     
     <div class="features-section">
-      <div class="features-header">
-        <div class="glow-effect"></div>
-        <h2 class="features-title">처음이라면 아래 목록을 진행해보세요!</h2>
-      </div>  
-      
-      <div class="feature-cards">
-        <div class="feature-card">
-          <div class="feature-icon pdf-icon"></div>
-          <div class="feature-text">학습 PDF 업로드하기</div>
-          <div class="check-icon checked"></div>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon calendar-icon"></div>
-          <div class="feature-text">캘린더에 학습 일정 등록하기</div>
-          <div class="check-icon"></div>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon ai-icon"></div>
-          <div class="feature-text">AI튜터에게 질문하기</div>
-          <div class="check-icon"></div>
-        </div>
-      </div>
+        <img
+          :src="featureImages[currentImageIndex]"
+          alt="플래노바 오픈 이벤트"
+          class="event-image"
+          style="background-color: white; width: 100%; height: 100%; object-fit: cover; display: block;"
+        >
     </div>
   </div>
 </template>
 
 <script>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import 'v-calendar/dist/style.css';
 
 export default {
@@ -121,9 +125,53 @@ export default {
       }))
     ]);
 
+    const currentImageIndex = ref(0);
+    // Use Vite-compatible image imports
+    const featureImages = [
+      new URL('@/assets/images/planova_main_1.png', import.meta.url).href,
+      new URL('@/assets/images/planova_main_2.png', import.meta.url).href,
+      new URL('@/assets/images/planova_main_3.png', import.meta.url).href,
+      new URL('@/assets/images/planova_main_4.png', import.meta.url).href
+    ];
+
+    let intervalId = null;
+
+    function nextImage() {
+      // Defensive: ensure featureImages is an array with length
+      if (Array.isArray(featureImages) && featureImages.length > 0) {
+        currentImageIndex.value = (currentImageIndex.value + 1) % featureImages.length;
+      } else {
+        currentImageIndex.value = 0;
+      }
+    }
+
+    onMounted(() => {
+      // Defensive: reset to first image on mount
+      currentImageIndex.value = 0;
+      intervalId = setInterval(nextImage, 2000);
+    });
+
+    onBeforeUnmount(() => {
+      if (intervalId) clearInterval(intervalId);
+    });
+
+    const today = new Date();
+    const hasTodayEvent = computed(() => {
+      return events.value.some(event => {
+        return (
+          event.date.getFullYear() === today.getFullYear() &&
+          event.date.getMonth() === today.getMonth() &&
+          event.date.getDate() === today.getDate()
+        );
+      });
+    });
+
     return {
       calendarAttributes,
-      masks
+      masks,
+      currentImageIndex,
+      featureImages,
+      hasTodayEvent
     };
   }
 }
@@ -146,24 +194,119 @@ export default {
   display: flex;
   gap: 30px;
   position: relative;
-  margin-bottom: 70px;
+  margin-bottom: 30px;
 }
 
 .special-offer-badge {
   background: linear-gradient(135deg, #FF6B00, #FF9500);
   color: white;
-  padding: 10px 30px;
+  padding: 20px 50px;
   border-radius: 8px;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 30px;
   box-shadow: 0 5px 15px rgba(255, 103, 7, 0.3);
   display: inline-block;
   margin-bottom: 15px;
   transition: all 0.3s ease;
   position: absolute;
-  top: 20px;
+  top: 10px;
   left: 20px;
   z-index: 2;
+}
+
+.special-offer-badge.static-badge {
+  /* Remove animation for static badge */
+  /* No extra styles needed, just disables animation */
+}
+
+/* 이벤트 이미지 스포트라이트 효과 */
+.spotlight-container {
+  position: relative;
+  text-align: center;
+  margin: 45px 0 25px;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 15px 30px rgba(255, 107, 0, 0.15);
+  transition: all 0.5s ease;
+}
+
+.spotlight-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.8), transparent 60%);
+  opacity: 0;
+  z-index: 2;
+  pointer-events: none;
+  animation: spotlight 5s infinite;
+}
+
+@keyframes spotlight {
+  0% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+.event-image {
+  width: 100%;
+  display: block;
+  transition: transform 0.7s ease;
+  border: 6px;
+  z-index: 1;
+  filter: brightness(1.05);
+}
+
+.spotlight-container:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(255, 107, 0, 0.2);
+}
+
+.spotlight-container:hover .event-image {
+  transform: scale(1.05);
+}
+
+/* 한정 시간 배너 스타일 */
+.limited-time-banner {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background: linear-gradient(90deg, #FF3B00, #FF9500);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 20px;
+  box-shadow: -5px 5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 3;
+  transform: translateX(0);
+  animation: slideIn 0.5s ease-out 1s forwards, attention 3s 2s infinite;
+}
+
+.countdown-text {
+  display: flex;
+  align-items: center;
+}
+
+.countdown-text::before {
+  content: "⏱️";
+  margin-right: 10px;
+  font-size: 25px;
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes attention {
+  0% { transform: translateX(0); }
+  5% { transform: translateX(-5px); }
+  10% { transform: translateX(5px); }
+  15% { transform: translateX(-5px); }
+  20% { transform: translateX(0); }
+  100% { transform: translateX(0); }
 }
 
 .left-section {
@@ -180,7 +323,7 @@ export default {
   background-color: white;
   border-radius: 16px;
   padding: 30px;
-  padding-top: 60px;
+  padding-top: 50px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
   position: relative;
   overflow: visible; 
@@ -194,176 +337,164 @@ export default {
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
-.offer-card:hover .special-offer-badge {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(255, 103, 7, 0.4);
-}
-
-.offer-header {
-  text-align: center;
-  margin-bottom: 25px;
-  margin-top: 15px;
-}
-
-.offer-title {
-  font-size: 26px;
-  font-weight: 800;
-  margin-bottom: 20px;
-  color: #ff6a00;
+/* 보너스 플래닛 강조 스타일 */
+.highlight-bonus {
   position: relative;
-  display: inline-block;
+  padding: 8px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+  border-radius: 8px;
+  border: 2px dashed #10B981;
 }
 
-.bonus-info {
+.bonus-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #10B981;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 20px;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+}
+
+@keyframes bonus-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 총 플래닛 숫자에 빛나는 효과 */
+.glow-text {
+  color: #F76707;
+  font-size: 26px !important;
+  font-weight: 800;
+  text-shadow: 0 0 10px rgba(247, 103, 7, 0.5);
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% { text-shadow: 0 0 10px rgba(247, 103, 7, 0.5); }
+  50% { text-shadow: 0 0 25px rgba(247, 103, 7, 0.8); }
+}
+
+/* 크레딧 브레이크다운 */
+.credit-breakdown {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 25px;
+  padding: 20px;
+  background: linear-gradient(135deg, #F8F9FF, #EEF2FF);
+  border-radius: 12px;
+  border: 1px solid #E0E7FF;
+}
+
+.credit-item {
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.credit-item:hover {
+  transform: scale(1.1);
+}
+
+.credit-amount {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.credit-label {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.credit-item.bonus .credit-amount {
+  color: #10B981;
+}
+
+.plus-divider, .equals-divider {
+  font-size: 18px;
+  font-weight: bold;
+  color: #666;
+}
+
+/* 버튼 스타일 개선 */
+.purchase-button-link {
+  display: block;
+  text-decoration: none;
+  width: 100%;
+  margin-top: 30px;
+}
+
+.purchase-button {
+  width: 100%;
+  padding: 20px;
+  background: #ff5900;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 10px;
-  background: linear-gradient(to right, #FFF3E0, #FFE0B2);
-  padding: 12px 20px;
-  border-radius: 50px;
-  margin: 0 auto;
-  width: fit-content;
-  font-size: 16px;
-  font-weight: 600;
-  color: #222;
-  box-shadow: 0 4px 10px rgba(247, 103, 7, 0.15);
-  transition: all 0.3s ease;
-  border-left: none;
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.bonus-info::before {
-  content: "";
+.button-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.button-icon {
+  transition: transform 0.3s ease;
+}
+
+.button-shine {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  background: linear-gradient(
+    90deg, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.2) 50%, 
+    rgba(255, 255, 255, 0) 100%
+  );
   transform: translateX(-100%);
-  transition: transform 0.6s ease;
+  animation: button-shine 3s infinite;
 }
 
-.offer-card:hover .bonus-info::before {
-  transform: translateX(100%);
+@keyframes button-shine {
+  0% { transform: translateX(-100%); }
+  20% { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
 }
 
-.plus-icon {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #F76707, #FF9500);
-  color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  font-weight: bold;
-  font-size: 16px;
-  box-shadow: 0 3px 8px rgba(247, 103, 7, 0.3);
+.purchase-button:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(247, 103, 7, 0.4);
 }
 
-.price-info {
-  margin-top: 25px;
-  background-color: #FFFAF4;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px dashed #FFE0B2;
-  position: relative;
-  overflow: hidden;
-}
-
-.price-info::before {
-  content: "";
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(247, 103, 7, 0.05), transparent);
-  top: -100px;
-  right: -100px;
-  border-radius: 50%;
-}
-
-.original-price {
-  text-align: right;
-  color: #888;
-  font-size: 15px;
-  margin-bottom: 10px;
-}
-
-.price-strike {
-  text-decoration: line-through;
-  margin-left: 5px;
-}
-
-.discount-price {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 15px;
-}
-
-.discount-badge {
-  background: linear-gradient(135deg, #F76707, #FF9500);
-  color: white;
-  font-size: 22px;
-  font-weight: bold;
-  padding: 4px 16px;
-  border-radius: 50px;
-  box-shadow: 0 4px 10px rgba(247, 103, 7, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.discount-badge::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 60%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: skewX(-25deg);
-}
-
-.final-price {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.price-highlight {
-  font-size: 32px;
-  font-weight: 800;
-  background: linear-gradient(135deg, #F76707, #FF9500);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-left: 8px;
-  position: relative;
-}
-
-.purchase-button {
-  width: 100%;
-  padding: 18px;
-  background: #FFFAF4;
-  color: #F76707;
-  border: 2px solid #F76707;
-  border-radius: 10px;
-  font-size: 20px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(247, 103, 7, 0.1);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  position: relative;
-  overflow: hidden;
-  margin-top: 20px;
-}
-
-.purchase-button:hover::before {
-  left: 100%;
+.purchase-button:hover .button-icon {
+  transform: translateX(5px);
 }
 
 .right-section {
@@ -371,7 +502,7 @@ export default {
 }
 
 .user-info-card {
-  background-color: white;
+  background-color: #fff9ef;
   border-radius: 16px;
   padding: 40px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
@@ -381,11 +512,6 @@ export default {
   border: none;
   position: relative;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.user-info-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
 .greeting {
@@ -460,41 +586,138 @@ export default {
   opacity: 0.4;
 }
 
-.calendar-legend {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
+/* 개선된 '오늘 일정이 없습니다' 메시지 스타일 */
+.no-event-message {
+  margin-top: 25px;
+  padding: 20px;
+  background: linear-gradient(135deg, #FFF8F0, #FFF0E0);
+  border-radius: 16px;
+  border: 2px dashed #FFB366;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 8px 20px rgba(255, 107, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
 }
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
+.no-event-message::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 180, 0, 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
 }
 
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 8px;
+.no-event-icon {
+  display: block;
+  margin: 0 auto 10px;
+  font-size: 28px;
+  opacity: 0.9;
+  transition: transform 0.4s ease;
 }
 
-.legend-text {
-  flex: 1;
-  font-size: 14px;
+.no-event-link {
+  color: #ff6b00;
+  font-weight: 600;
+  text-decoration: none;
+  display: block;
+  transition: all 0.3s ease;
+  padding: 5px;
+  border-radius: 10px;
+  position: relative;
+}
+
+.no-event-text {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #555;
+}
+
+.no-event-text strong {
+  color: #ff6b00;
+  font-weight: 700;
+}
+
+.no-event-link::after {
+  content: "";
+  display: inline-block;
+  margin-left: 5px;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+}
+
+.no-event-message:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(255, 107, 0, 0.15);
+  border-color: #FF8533;
+}
+
+.no-event-message:hover::before {
+  opacity: 1;
+  animation: shine 2s infinite;
+}
+
+.no-event-message:hover .no-event-icon {
+  transform: scale(1.2) rotate(10deg);
+}
+
+.no-event-link:hover {
+  background-color: rgba(255, 107, 0, 0.07);
+}
+
+.no-event-link:hover::after {
+  opacity: 1;
+  transform: translateX(5px);
+}
+
+.no-event-link:hover .no-event-text {
   color: #333;
 }
 
-:deep(.vc-arrow) {
-  font-size: 18px;
-  color: #888;
+.no-event-button {
+  margin-top: 12px;
+  background: linear-gradient(90deg, #FF7A00, #FF9500);
+  border: none;
+  color: white;
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(10px);
+  box-shadow: 0 4px 15px rgba(255, 122, 0, 0.25);
 }
 
+.no-event-message:hover .no-event-button {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.no-event-button:hover {
+  background: linear-gradient(90deg, #FF6B00, #FF8500);
+  box-shadow: 0 6px 20px rgba(255, 122, 0, 0.35);
+  transform: translateY(-2px);
+}
+
+@keyframes shine {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 피처 섹션 스타일 유지 */
 .features-section {
   margin-top: 50px;
   background-color: white;
   border-radius: 20px;
-  padding: 40px;
+  padding: 0;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
   border: none;
   position: relative;
@@ -511,6 +734,7 @@ export default {
   right: -150px;
   border-radius: 50%;
 }
+
 
 .features-header {
   position: relative;
@@ -546,26 +770,6 @@ export default {
   padding: 0 15px;
 }
 
-.features-title::before,
-.features-title::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 6px;
-  height: 30px;
-  background: linear-gradient(to bottom, #F76707, #FF9500);
-  border-radius: 3px;
-}
-
-.features-title::before {
-  left: -30px;
-}
-
-.features-title::after {
-  right: -30px;
-}
-
 .feature-cards {
   display: flex;
   flex-direction: column;
@@ -586,28 +790,6 @@ export default {
   overflow: hidden;
 }
 
-.feature-card::before {
-  content: "";
-  position: absolute;
-  background: linear-gradient(90deg, rgba(247, 103, 7, 0.1), transparent);
-  width: 30%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  transform: translateX(-100%);
-  transition: transform 1.5s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-  background-color: #FFFAF4;
-}
-
-.feature-card:hover::before {
-  transform: translateX(300%);
-}
-
 .feature-icon {
   width: 30px;
   height: 30px;
@@ -618,46 +800,21 @@ export default {
   transition: transform 0.3s ease;
 }
 
-.feature-card:hover .feature-icon {
-  transform: scale(1.1);
-}
-
-.pdf-icon::before {
-  content: "";
-  display: block;
-  width: 100%;
-  height: 100%;
-  background-image: url('@/assets/images/studentmain-pdf.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-.calendar-icon::before {
-  content: "";
-  display: block;
-  width: 100%;
-  height: 100%;
-  background-image: url('@/assets/images/studentmain-calendar.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-.ai-icon::before {
-  content: "";
-  display: block;
-  width: 100%;
-  height: 100%;
-  background-image: url('@/assets/images/studentmain-ai.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+.feature-content {
+  flex: 1;
 }
 
 .feature-text {
-  flex: 1;
   font-size: 18px;
   font-weight: 600;
   color: #333;
+  margin-bottom: 4px;
+}
+
+.feature-credit {
+  font-size: 14px;
+  color: #F76707;
+  font-weight: 500;
 }
 
 .check-icon {
@@ -681,6 +838,7 @@ export default {
   60% {transform: translateY(-5px);}
 }
 
+/* 반응형 스타일 */
 @media (max-width: 768px) {
   .page-container {
     flex-direction: column;
@@ -694,12 +852,36 @@ export default {
     padding: 25px;
   }
   
-  .offer-title {
-    font-size: 22px;
+  .special-offer-badge {
+    font-size: 24px;
+    padding: 15px 30px;
   }
   
-  .price-highlight {
-    font-size: 28px;
+  .credit-breakdown {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .plus-divider, .equals-divider {
+    transform: rotate(90deg);
+  }
+  
+  .no-event-message {
+    padding: 15px;
+  }
+  
+  .no-event-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  
+  .no-event-text {
+    font-size: 15px;
+  }
+  
+  .no-event-button {
+    padding: 6px 16px;
+    font-size: 13px;
   }
 }
 </style>

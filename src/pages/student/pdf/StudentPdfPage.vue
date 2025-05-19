@@ -1,225 +1,108 @@
 <template>
   <div class="student-pdf-container">
-    <div class="top-container">
-      <div class="tab-container">
-        <button 
-          class="tab-button" 
-          :class="{ 'active': activeTab === 'personal' }"
-          @click="activeTab = 'personal'"
-        >
-          개인
-        </button>
-        <button 
-          class="tab-button" 
-          :class="{ 'active': activeTab === 'team' }"
-          @click="activeTab = 'team'"
-        >
-          팀
-        </button>
-      </div>
-      
-      <div class="action-icons">
-        <button class="action-button" @click="toggleViewMode('list')">
-          <img src="@/assets/images/studentpdf-list.png" alt="리스트 보기" class="action-icon">
-        </button>
-        <button class="action-button" @click="toggleSelectMode">
-          <img src="@/assets/images/studentpdf-select.png" alt="선택 모드" class="action-icon">
-        </button>
-        <button class="action-button" @click="toggleOptionsMenu">
-          <img src="@/assets/images/studentpdf-setting.png" alt="삭제 옵션" class="action-icon">
-        </button>
-      </div>
-    </div>
+    <!-- 파일 관리자 컴포넌트 -->
+    <FileManager
+      :activeTab="activeTab"
+      :teamFolders="teamFolders"
+      :teamFiles="teamFiles"
+      :selectedTeam="selectedTeam"
+      :currentPath="currentPath"
+      :breadcrumbs="breadcrumbs"
+      :viewMode="viewMode"
+      :selectMode="selectMode"
+      :selectedItems="selectedItems"
+      @update:activeTab="activeTab = $event"
+      @toggle-view="toggleViewMode"
+      @toggle-select="toggleSelectMode"
+      @toggle-options="toggleOptionsMenu"
+      @navigate-back="navigateBack"
+      @navigate-home="navigateHome"
+      @navigate-to-breadcrumb="navigateToBreadcrumb"
+      @add-item="handleAddClick"
+      @open-folder="openFolder"
+      @open-file="openFile"
+      @update:selectedItems="selectedItems = $event"
+      @update:selectedTeam="selectedTeam = $event"
+      @handle-rename="handleRename"
+      @handle-move="handleMoveItem"
+      @handle-delete="handleDelete"
+    />
     
-    <div class="folder-grid" :class="{ 'list-view': viewMode === 'list' }">
-      <div class="folder-item add-folder" @click="handleAddClick">
-        <div class="add-icon">
-          <span class="plus-icon">+</span>
-        </div>
-        <div class="folder-name">추가</div>
-      </div>
-
-      <div 
-        v-for="folder in filteredFolders" 
-        :key="folder.id" 
-        class="folder-item" 
-        :class="{ 'list-view': viewMode === 'list', 'selected': selectMode && selectedItems.includes(folder.id) }"
-        @click="selectMode ? toggleItemSelection(folder.id) : openFolder(folder.id)"
-      >
-        <div class="item-checkbox" v-if="selectMode">
-          <input 
-            type="checkbox" 
-            :checked="selectedItems.includes(folder.id)" 
-            @click.stop="toggleItemSelection(folder.id)"
-          >
-        </div>
-        <div class="folder-icon">
-          <img src="@/assets/images/studentpdf-folder.png" alt="폴더" class="folder-image">
-        </div>
-        <div class="folder-name">{{ folder.name }}</div>
-      </div>
-
-      <div 
-        v-for="file in filteredFiles" 
-        :key="file.id" 
-        class="folder-item file-item" 
-        :class="{ 'list-view': viewMode === 'list', 'selected': selectMode && selectedItems.includes(file.id) }"
-        @click="selectMode ? toggleItemSelection(file.id) : openFile(file.id)"
-      >
-        <div class="item-checkbox" v-if="selectMode">
-          <input 
-            type="checkbox" 
-            :checked="selectedItems.includes(file.id)" 
-            @click.stop="toggleItemSelection(file.id)"
-          >
-        </div>
-        <div class="file-icon">
-          <img src="@/assets/images/studentpdf-file.png" alt="파일" class="file-image">
-        </div>
-        <div class="folder-name">{{ file.name }}</div>
-      </div>
-    </div>
-
-    <div class="folder-modal" v-if="showAddOptions">
-      <div class="modal-content options-modal">
-        <h3 class="options-title">추가하기</h3>
-        <div class="option-buttons">
-          <button @click="handleFileUpload" class="option-button">
-            <div class="option-icon file-option">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="12" y1="18" x2="12" y2="12"></line>
-                <line x1="9" y1="15" x2="15" y2="15"></line>
-              </svg>
-            </div>
-            <div class="option-text">
-              <span class="option-title">파일 업로드</span>
-              <span class="option-desc">PDF 파일을 업로드합니다</span>
-            </div>
-          </button>
-          <button @click="handleAddFolder" class="option-button">
-            <div class="option-icon folder-option">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                <line x1="12" y1="11" x2="12" y2="17"></line>
-                <line x1="9" y1="14" x2="15" y2="14"></line>
-              </svg>
-            </div>
-            <div class="option-text">
-              <span class="option-title">폴더 생성</span>
-              <span class="option-desc">새 폴더를 만듭니다</span>
-            </div>
-          </button>
-        </div>
-        <button @click="cancelAddOptions" class="close-options-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="folder-modal" v-if="showFileUploadModal">
-      <div class="modal-content upload-modal">
-        <h3 class="modal-title">파일 업로드</h3>
-        <div class="file-upload-area" :class="{ 'has-file': selectedFile }">
-          <input 
-            type="file" 
-            id="fileUpload" 
-            ref="fileInput"
-            @change="onFileSelected"
-            accept=".pdf"
-            class="file-input"
-          />
-          <label for="fileUpload" class="file-upload-label">
-            <div class="upload-icon">
-              <svg v-if="!selectedFile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <circle cx="12" cy="13" r="4"></circle>
-              </svg>
-            </div>
-            <div class="upload-text">
-              <span class="upload-title">{{ selectedFile ? '파일이 선택됨' : '파일을 드래그하거나 선택하세요' }}</span>
-              <span v-if="!selectedFile" class="upload-desc">PDF 파일만 가능합니다</span>
-              <span v-else class="selected-file">{{ selectedFile.name }}</span>
-            </div>
-          </label>
-        </div>
-        <div class="modal-buttons">
-          <button @click="cancelFileUpload" class="cancel-button">취소</button>
-          <button @click="uploadFile" class="create-button" :disabled="!selectedFile">
-            <svg v-if="!selectedFile" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="17 8 12 3 7 8"></polyline>
-              <line x1="12" y1="3" x2="12" y2="15"></line>
-            </svg>
-            <span>업로드</span>
-          </button>
-        </div>
-        <button @click="cancelFileUpload" class="close-modal-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="folder-modal" v-if="showFolderModal">
-      <div class="modal-content folder-create-modal">
-        <h3 class="modal-title">새 폴더 생성</h3>
-        <div class="folder-input-container">
-          <div class="folder-icon-preview">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-            </svg>
-          </div>
-          <input 
-            type="text" 
-            v-model="newFolderName" 
-            placeholder="폴더 이름을 입력하세요"
-            class="folder-input"
-          />
-        </div>
-        <div class="modal-buttons">
-          <button @click="cancelAddFolder" class="cancel-button">취소</button>
-          <button @click="createFolder" class="create-button" :disabled="!newFolderName.trim()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>생성</span>
-          </button>
-        </div>
-        <button @click="cancelAddFolder" class="close-modal-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-    </div>
+    <!-- 공통 모달 컴포넌트들 -->
+    <CommonModal
+      v-if="showAddOptions"
+      show
+      type="options"
+      title="추가하기"
+      @cancel="showAddOptions = false"
+      @file-upload="handleFileUpload"
+      @folder-create="handleAddFolder"
+    />
+    
+    <CommonModal
+      v-if="showFolderModal"
+      show
+      type="folder-create"
+      title="새 폴더 만들기"
+      :initialValue="newFolderName"
+      @cancel="cancelAddFolder"
+      @submit="createFolder"
+    />
+    
+    <CommonModal
+      v-if="showFileUploadModal"
+      show
+      type="file-upload"
+      title="파일 업로드"
+      @cancel="cancelFileUpload"
+      @submit="uploadFile"
+    />
+    
+    <CommonModal
+      v-if="showRenameModal"
+      show
+      type="rename"
+      title="이름 변경"
+      :initialValue="newItemName"
+      :itemType="selectedItemType"
+      @cancel="cancelRename"
+      @submit="confirmRename"
+    />
+    
+    <CommonModal
+      v-if="showMoveModal"
+      show
+      type="move"
+      :title="selectedItemType === 'folder' ? '폴더 이동' : '파일 이동'"
+      :allFolders="allFolders"
+      :targetFolderId="targetFolderId"
+      :selectedItemId="selectedItemId"
+      :itemType="selectedItemType"
+      @cancel="cancelMove"
+      @submit="confirmMove"
+      @select-target="selectTargetFolder"
+    />
   </div>
 </template>
 
 <script>
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import FileManager from './FileManager.vue';
+import CommonModal from './CommonModal.vue';
+import IndexedDBService from '@/util/IndexedDBService';
 
 export default {
   name: 'StudentPdfPage',
+  components: {
+    FileManager,
+    CommonModal
+  },
   
   setup() {
     const router = useRouter();
-    const activeTab = ref('personal');
+    const route = useRoute();
+    const activeTab = ref(route.query.tab === 'team' ? 'team' : 'personal');
     const showAddOptions = ref(false);
     const showFolderModal = ref(false);
     const showFileUploadModal = ref(false);
@@ -230,32 +113,83 @@ export default {
     const viewMode = ref('grid');
     const selectMode = ref(false);
     const selectedItems = ref([]);
+    const currentPath = ref([]);
+    const currentFolderId = ref(null);
+    
+    // 컨텍스트 메뉴 관련 변수
+    const selectedItemId = ref(null);
+    const selectedItemType = ref(null);
+    const selectedItem = ref(null);
+
+    // 이름 변경 관련 변수
+    const showRenameModal = ref(false);
+    const newItemName = ref('');
+
+    // 이동 관련 변수
+    const showMoveModal = ref(false);
+    const targetFolderId = ref(null);
     
     const folders = ref([
-      { id: 'school', name: '학교수업', type: 'personal' },
-      { id: 'personal', name: '개인공부', type: 'personal' },
-      { id: 'project', name: '프로젝트', type: 'personal' }
+      { id: 'mocktest', name: '기출문제', type: 'personal', parentId: null },
+       { id: 'question', name: '생성문제', type: 'personal', parentId: null },
+      { id: 'file', name: '요약파일', type: 'personal', parentId: null },
+      { id: 'math', name: '수학', type: 'personal', parentId: 'question' },
+      { id: 'english', name: '영어', type: 'personal', parentId: 'file' },
     ]);
     
     const files = ref([
-      { id: 'file-1', name: '수학노트.pdf', type: 'personal' },
-      { id: 'file-2', name: '영어과제.pdf', type: 'personal' }
+      { id: 'file-3', name: '수학 기본 개념.pdf', type: 'personal', parentId: 'math' },
+      { id: 'file-4', name: '영어 단어장.pdf', type: 'personal', parentId: 'english' },
+      { id: 'file-5', name: '미적분 문제집.pdf', type: 'personal', parentId: 'advanced-math' }
     ]);
 
     const filteredFolders = computed(() => {
-      return folders.value.filter(folder => folder.type === activeTab.value);
+      return folders.value.filter(folder => 
+        folder.type === activeTab.value && 
+        folder.parentId === currentFolderId.value
+      );
+    });
+    
+    const selectedTeam = ref(1);
+    
+    const teamFolders = computed(() => {
+      return {
+        1: folders.value.filter(f => f.type === activeTab.value && f.parentId === currentFolderId.value && f.team === 1),
+        2: folders.value.filter(f => f.type === activeTab.value && f.parentId === currentFolderId.value && f.team === 2),
+        3: folders.value.filter(f => f.type === activeTab.value && f.parentId === currentFolderId.value && f.team === 3)
+      };
+    });
+    
+    const teamFiles = computed(() => {
+      return {
+        1: files.value.filter(f => f.type === activeTab.value && f.parentId === currentFolderId.value && f.team === 1),
+        2: files.value.filter(f => f.type === activeTab.value && f.parentId === currentFolderId.value && f.team === 2),
+        3: files.value.filter(f => f.type === activeTab.value && f.parentId === currentFolderId.value && f.team === 3)
+      };
     });
     
     const filteredFiles = computed(() => {
-      return files.value.filter(file => file.type === activeTab.value);
+      return files.value.filter(file => 
+        file.type === activeTab.value && 
+        file.parentId === currentFolderId.value
+      );
+    });
+    
+    // 모든 폴더 (트리 뷰용)
+    const allFolders = computed(() => {
+      return folders.value.filter(folder => folder.type === activeTab.value);
+    });
+    
+    const breadcrumbs = computed(() => {
+      return currentPath.value.map(id => {
+        const folder = folders.value.find(f => f.id === id);
+        return folder ? { id, name: folder.name } : null;
+      }).filter(Boolean);
     });
 
+    // 기능 함수들
     const handleAddClick = () => {
       showAddOptions.value = true;
-    };
-    
-    const cancelAddOptions = () => {
-      showAddOptions.value = false;
     };
     
     const handleFileUpload = () => {
@@ -273,59 +207,103 @@ export default {
       newFolderName.value = '';
     };
 
-    const createFolder = () => {
-      if (newFolderName.value.trim() !== '') {
+    const createFolder = (folderName) => {
+      if (folderName && folderName.trim() !== '') {
         const newId = 'folder-' + Date.now();
         folders.value.push({
           id: newId,
-          name: newFolderName.value.trim(),
-          type: activeTab.value
+          name: folderName.trim(),
+          type: activeTab.value,
+          parentId: currentFolderId.value,
+          team: selectedTeam.value
         });
-        newFolderName.value = '';
         showFolderModal.value = false;
-      }
-    };
-    
-    const onFileSelected = (event) => {
-      const files = event.target.files;
-      if (files.length > 0) {
-        selectedFile.value = files[0];
       }
     };
     
     const cancelFileUpload = () => {
       showFileUploadModal.value = false;
       selectedFile.value = null;
-      if (fileInput.value) {
-        fileInput.value.value = '';
-      }
     };
     
-    const uploadFile = () => {
-  if (selectedFile.value) {
-    const newId = 'file-' + Date.now();
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64Data = reader.result;
-
-      localStorage.setItem(`pdfFile_${newId}`, JSON.stringify({
-        name: selectedFile.value.name,
-        base64: base64Data
-      }));
-
-      files.value.push({
-        id: newId,
-        name: selectedFile.value.name,
-        type: activeTab.value
-      });
-
-      showFileUploadModal.value = false;
-      selectedFile.value = null;
-      if (fileInput.value) fileInput.value.value = '';
+    // 개선된 파일 업로드 함수
+    const uploadFile = async (file) => {
+      if (!file) return;
+      
+      try {
+        // 파일 타입 검증
+        if (file.type !== 'application/pdf') {
+          alert('PDF 파일만 업로드할 수 있습니다.');
+          return;
+        }
+        
+        // 파일 크기 검증 (50MB 제한)
+        const maxFileSize = 50 * 1024 * 1024;
+        if (file.size > maxFileSize) {
+          alert(`파일 크기가 너무 큽니다. ${IndexedDBService.formatFileSize(maxFileSize)} 이하의 파일만 업로드할 수 있습니다.`);
+          return;
+        }
+        
+        const newId = 'file-' + Date.now() + '-' + Math.random().toString(36).substring(7);
+        
+        console.log('📤 파일 업로드 시작:', file.name);
+        
+        // FileReader로 파일을 Base64로 변환
+        const base64Content = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          
+          reader.onload = (event) => {
+            resolve(event.target.result);
+          };
+          
+          reader.onerror = (error) => {
+            reject(error);
+          };
+          
+          reader.readAsDataURL(file);
+        });
+        
+        // IndexedDB에 저장할 파일 정보
+        const fileInfo = {
+          id: newId,
+          name: file.name,
+          content: base64Content,
+          type: file.type,
+          size: file.size,
+          parentId: currentFolderId.value,
+          uploadDate: new Date().toISOString(),
+          // 탭 정보 추가
+          activeTab: activeTab.value,
+          team: activeTab.value === 'team' ? selectedTeam.value : null
+        };
+        
+        // IndexedDB에 파일 저장 - 올바른 메서드명 사용
+        await IndexedDBService.saveFile(fileInfo);
+        console.log('✅ IndexedDB 저장 완료');
+        
+        // 메모리의 파일 목록에 추가
+        files.value.push({
+          id: newId,
+          name: file.name,
+          type: activeTab.value,
+          parentId: currentFolderId.value,
+          size: IndexedDBService.formatFileSize(file.size),
+          team: activeTab.value === 'team' ? selectedTeam.value : null
+        });
+        
+        console.log('✅ 파일 목록 업데이트 완료');
+        showFileUploadModal.value = false;
+        
+        // 업로드 완료 후 해당 파일로 이동 (선택사항)
+        if (confirm('업로드가 완료되었습니다. 파일을 열어보시겠습니까?')) {
+          router.push(`/student/pdf/view/${newId}`);
+        }
+        
+      } catch (error) {
+        console.error('❌ 파일 업로드 오류:', error);
+        alert('파일 업로드 중 오류가 발생했습니다: ' + error.message);
+      }
     };
-    reader.readAsDataURL(selectedFile.value); // ← base64로 읽기
-  }
-};
 
     const toggleViewMode = (mode) => {
       viewMode.value = mode;
@@ -342,61 +320,333 @@ export default {
       showOptionsMenu.value = !showOptionsMenu.value;
     };
     
-    const toggleItemSelection = (itemId) => {
-      const index = selectedItems.value.indexOf(itemId);
-      if (index === -1) {
-        selectedItems.value.push(itemId);
+    // 이름 변경 모달 열기
+    const handleRename = (item, type) => {
+      selectedItemId.value = item.id;
+      selectedItemType.value = type;
+      selectedItem.value = item;
+      
+      if (type === 'folder') {
+        newItemName.value = item.name;
       } else {
-        selectedItems.value.splice(index, 1);
+        // 확장자 제외한 파일명만 편집
+        const nameParts = item.name.split('.');
+        const extension = nameParts.pop();
+        newItemName.value = nameParts.join('.');
+      }
+      
+      showRenameModal.value = true;
+    };
+    
+    // 이름 변경 취소
+    const cancelRename = () => {
+      showRenameModal.value = false;
+      newItemName.value = '';
+    };
+    
+    // 이름 변경 확인
+    const confirmRename = async (newName) => {
+      if (!newName || !newName.trim()) return;
+      
+      try {
+        if (selectedItemType.value === 'folder') {
+          // 폴더 이름 변경
+          const folderIndex = folders.value.findIndex(f => f.id === selectedItemId.value);
+          if (folderIndex !== -1) {
+            folders.value[folderIndex].name = newName.trim();
+          }
+        } else {
+          // 파일 이름 변경
+          const fileIndex = files.value.findIndex(f => f.id === selectedItemId.value);
+          if (fileIndex !== -1) {
+            // 확장자 유지
+            const nameParts = files.value[fileIndex].name.split('.');
+            const extension = nameParts.pop();
+            files.value[fileIndex].name = `${newName.trim()}.${extension}`;
+            
+            // IndexedDB에서 파일 데이터 업데이트
+            try {
+              const fileData = await IndexedDBService.getFile(selectedItemId.value);
+              if (fileData) {
+                fileData.name = files.value[fileIndex].name;
+                await IndexedDBService.saveFile(fileData);
+              }
+            } catch (error) {
+              console.error('파일 이름 변경 오류:', error);
+            }
+          }
+        }
+        
+        showRenameModal.value = false;
+      } catch (error) {
+        console.error('이름 변경 오류:', error);
+        alert('이름을 변경하는 중 오류가 발생했습니다.');
       }
     };
     
-    const deleteSelectedItems = () => {
-      folders.value = folders.value.filter(folder => !selectedItems.value.includes(folder.id));
-      files.value = files.value.filter(file => !selectedItems.value.includes(file.id));
-      selectedItems.value = [];
-      showOptionsMenu.value = false;
+    // 항목 이동 모달 열기
+    const handleMoveItem = (item, type) => {
+      selectedItemId.value = item.id;
+      selectedItemType.value = type;
+      selectedItem.value = item;
+      showMoveModal.value = true;
+      targetFolderId.value = null; // 기본값: 루트 폴더
+    };
+    
+    // 이동 취소
+    const cancelMove = () => {
+      showMoveModal.value = false;
+      targetFolderId.value = null;
+    };
+    
+    // 대상 폴더 선택
+    const selectTargetFolder = (folderId) => {
+      targetFolderId.value = folderId;
+    };
+    
+    // 이동 확인
+    const confirmMove = async () => {
+      try {
+        if (selectedItemType.value === 'folder') {
+          // 폴더 이동
+          const folderIndex = folders.value.findIndex(f => f.id === selectedItemId.value);
+          if (folderIndex !== -1) {
+            folders.value[folderIndex].parentId = targetFolderId.value;
+          }
+        } else {
+          // 파일 이동
+          const fileIndex = files.value.findIndex(f => f.id === selectedItemId.value);
+          if (fileIndex !== -1) {
+            files.value[fileIndex].parentId = targetFolderId.value;
+            
+            // IndexedDB에서 파일 데이터 업데이트
+            try {
+              const fileData = await IndexedDBService.getFile(selectedItemId.value);
+              if (fileData) {
+                fileData.parentId = targetFolderId.value;
+                await IndexedDBService.saveFile(fileData);
+              }
+            } catch (error) {
+              console.error('파일 이동 오류:', error);
+            }
+          }
+        }
+        
+        showMoveModal.value = false;
+      } catch (error) {
+        console.error('이동 오류:', error);
+        alert('항목을 이동하는 중 오류가 발생했습니다.');
+      }
+    };
+    
+    // 항목 삭제
+    const handleDelete = async (item, type) => {
+      try {
+        const confirmMessage = type === 'folder'
+          ? '이 폴더와 모든 내용을 삭제하시겠습니까?'
+          : '이 파일을 삭제하시겠습니까?';
+          
+        if (!confirm(confirmMessage)) return;
+        
+        if (type === 'folder') {
+          // 폴더 삭제 시 하위 항목도 모두 삭제
+          await deleteFolder(item.id);
+        } else {
+          // 파일 삭제
+          await deleteFile(item.id);
+        }
+      } catch (error) {
+        console.error('삭제 오류:', error);
+        alert('항목을 삭제하는 중 오류가 발생했습니다.');
+      }
+    };
+    
+    // 파일 삭제 함수
+    const deleteFile = async (fileId) => {
+      try {
+        // IndexedDB에서 파일 데이터 삭제
+        await IndexedDBService.deleteFile(fileId);
+        
+        // 파일 목록에서 제거
+        files.value = files.value.filter(file => file.id !== fileId);
+      } catch (error) {
+        console.error('파일 삭제 오류:', error);
+        throw error;
+      }
+    };
+    
+    // 폴더 삭제 함수 (재귀적으로 하위 항목 삭제)
+    const deleteFolder = async (folderId) => {
+      try {
+        // 하위 폴더 찾기
+        const subFolders = folders.value.filter(folder => folder.parentId === folderId);
+        
+        // 하위 파일 찾기
+        const subFiles = files.value.filter(file => file.parentId === folderId);
+        
+        // 하위 폴더 먼저 삭제 (재귀 호출)
+        for (const subFolder of subFolders) {
+          await deleteFolder(subFolder.id);
+        }
+        
+        // 하위 파일 삭제
+        for (const subFile of subFiles) {
+          await deleteFile(subFile.id);
+        }
+        
+        // 마지막으로 폴더 자체 삭제
+        folders.value = folders.value.filter(folder => folder.id !== folderId);
+      } catch (error) {
+        console.error('폴더 삭제 오류:', error);
+        throw error;
+      }
     };
     
     const openFolder = (folderId) => {
-      console.log(`Opening folder: ${folderId}`);
+      currentPath.value.push(folderId);
+      currentFolderId.value = folderId;
     };
     
-    const openFile = (fileId) => {
-      router.push(`/student/pdf/view/${fileId}`);
+    const navigateBack = () => {
+      if (currentPath.value.length > 0) {
+        currentPath.value.pop();
+        currentFolderId.value = currentPath.value.length > 0 
+          ? currentPath.value[currentPath.value.length - 1] 
+          : null;
+      }
     };
+    
+    const navigateHome = () => {
+      currentPath.value = [];
+      currentFolderId.value = null;
+    };
+    
+    const navigateToBreadcrumb = (index) => {
+      if (index < currentPath.value.length) {
+        currentPath.value = currentPath.value.slice(0, index + 1);
+        currentFolderId.value = currentPath.value[index];
+      }
+    };
+    
+    const openFile = async (fileId) => {
+      try {
+        // IndexedDB에서 파일 데이터 가져오기
+        const fileData = await IndexedDBService.getFile(fileId);
+        if (!fileData) {
+          alert('파일을 찾을 수 없습니다.');
+          return;
+        }
+        
+        // 필요한 경우 여기서 fileData를 세션 스토리지에 임시 저장할 수 있음
+        // 뷰어 페이지에서 접근할 수 있도록
+        sessionStorage.setItem('currentPdfFile', fileId);
+        
+        // PDF 뷰어 페이지로 이동
+        router.push(`/student/pdf/view/${fileId}`);
+      } catch (error) {
+        console.error('파일 열기 오류:', error);
+        alert('파일을 여는 중 오류가 발생했습니다: ' + error);
+      }
+    };
+    
+    // 저장된 파일 로드 함수
+    const loadSavedFiles = async () => {
+      try {
+        console.log('📂 저장된 파일 로드 시작');
+        const savedFiles = await IndexedDBService.getAllFiles();
+        
+        // 기존 파일 목록 초기화
+        files.value = [];
+        
+        // 저장된 파일을 current activeTab과 팀에 맞게 필터링하여 추가
+        savedFiles.forEach(savedFile => {
+          // activeTab 정보가 없는 경우 personal로 기본 설정
+          const fileTab = savedFile.activeTab || 'personal';
+          const fileTeam = savedFile.team || null;
+          
+          files.value.push({
+            id: savedFile.id,
+            name: savedFile.name,
+            type: fileTab,
+            parentId: savedFile.parentId || null,
+            size: IndexedDBService.formatFileSize(savedFile.size),
+            team: fileTeam,
+            uploadDate: savedFile.uploadDate
+          });
+        });
+        
+        console.log('✅ 파일 로드 완료:', files.value.length + '개');
+      } catch (error) {
+        console.error('❌ 파일 로드 오류:', error);
+      }
+    };
+    
+    // 컴포넌트 마운트 시 저장된 파일 로드
+    onMounted(() => {
+      loadSavedFiles();
+    });
+    
+    // 탭 변경 시 파일 목록 새로고침
+    watch(activeTab, () => {
+      loadSavedFiles();
+    });
 
     return {
       activeTab,
-      showAddOptions,
-      showFolderModal,
-      showFileUploadModal,
-      newFolderName,
-      selectedFile,
-      fileInput,
       folders,
       files,
       filteredFolders,
       filteredFiles,
-      handleAddClick,
-      handleFileUpload,
-      handleAddFolder,
-      cancelAddOptions,
-      cancelAddFolder,
-      cancelFileUpload,
-      createFolder,
-      onFileSelected,
-      uploadFile,
-      openFolder,
-      openFile,
+      teamFolders,
+      teamFiles,
+      selectedTeam,
+      allFolders,
+      currentFolderId,
+      currentPath,
+      breadcrumbs,
       viewMode,
       selectMode,
       selectedItems,
+      
+      // 모달 관련 상태
+      showAddOptions,
+      showFolderModal,
+      showFileUploadModal,
+      showRenameModal,
+      showMoveModal,
+      
+      // 기타 상태 변수
+      newFolderName,
+      selectedItemId,
+      selectedItemType,
+      selectedItem,
+      newItemName,
+      targetFolderId,
+      
+      // 기능 함수들
+      handleAddClick,
+      handleFileUpload,
+      handleAddFolder,
+      cancelAddFolder,
+      createFolder,
+      cancelFileUpload,
+      uploadFile,
       toggleViewMode,
       toggleSelectMode,
       toggleOptionsMenu,
-      toggleItemSelection,
-      deleteSelectedItems
+      handleRename,
+      cancelRename,
+      confirmRename,
+      handleMoveItem,
+      cancelMove,
+      selectTargetFolder,
+      confirmMove,
+      handleDelete,
+      openFolder,
+      navigateBack,
+      navigateHome,
+      navigateToBreadcrumb,
+      openFile
     };
   }
 };
@@ -407,525 +657,5 @@ export default {
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
-}
-
-.top-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.tab-container {
-  display: flex;
-  border-radius: 8px;
-  overflow: hidden;
-  width: fit-content;
-}
-
-.action-icons {
-  display: flex;
-  gap: 10px;
-}
-
-.action-button {
-  display: flex;
-  align-items: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-}
-
-.action-icon {
-  width: 40px;
-  height: 40px;
-  background-color: transparent;
-}
-
-.tab-button {
-  padding: 10px 20px;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
-}
-
-.tab-button.active {
-  background-color: #f8b163;
-  color: white;
-}
-
-.tab-button:first-child {
-  border-radius: 8px 0 0 8px;
-}
-
-.tab-button:last-child {
-  border-radius: 0 8px 8px 0;
-}
-
-.folder-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.folder-grid:not(.list-view) {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-}
-
-.folder-grid.list-view {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.file-type-select {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-.folder-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  width: 100px;
-  margin: 0 auto;
-  position: relative;
-  padding: 8px;
-  border-radius: 8px;
-}
-
-.folder-item:hover {
-  transform: translateY(-3px);
-  background-color: #f8f9ff;
-}
-
-.folder-item.selected {
-  background-color: #e3f2fd;
-  border: 1px solid #64b5f6;
-}
-
-.folder-item.list-view {
-  flex-direction: row;
-  width: 100%;
-  padding: 10px 15px;
-  margin: 0;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 15px;
-}
-
-.folder-item.list-view:hover {
-  transform: none;
-  background-color: #f8f9ff;
-}
-
-.folder-item.list-view .folder-name {
-  text-align: left;
-  font-size: 14px;
-}
-
-.item-checkbox {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  z-index: 1;
-}
-
-.folder-item.list-view .item-checkbox {
-  position: static;
-  margin-right: 10px;
-}
-
-.folder-icon, .file-icon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.folder-image, .file-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.add-icon {
-  width: 30px;
-  height: 30px;
-  background-color: #4d90fe;
-  color: white;
-  border-radius: 6px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.plus-icon {
-  font-size: 20px;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.folder-name {
-  font-size: 13px;
-  text-align: center;
-  color: #333;
-  max-width: 90px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.folder-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 400px;
-}
-
-.folder-input {
-  width: 100%;
-  padding: 10px;
-  margin: 15px 0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.options-modal {
-  position: relative;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.options-title {
-  text-align: center;
-  font-size: 22px;
-  margin-bottom: 25px;
-  color: #333;
-  font-weight: 600;
-}
-
-.option-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin: 15px 0;
-}
-
-.option-button {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  border: none;
-  border-radius: 12px;
-  background-color: #ffffff;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-  font-size: 16px;
-  text-align: left;
-  transition: all 0.3s ease;
-  border: 1px solid #f0f0f0;
-}
-
-.option-button:hover {
-  background-color: #f8f9ff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-}
-
-.option-icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  margin-right: 16px;
-}
-
-.file-option {
-  background-color: #e3f2fd;
-  color: #1976d2;
-}
-
-.folder-option {
-  background-color: #fff8e1;
-  color: #ffb300;
-}
-
-.option-icon svg {
-  width: 24px;
-  height: 24px;
-}
-
-.option-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.option-title {
-  font-weight: 600;
-  font-size: 16px;
-  margin-bottom: 4px;
-  color: #333;
-}
-
-.option-desc {
-  font-size: 13px;
-  color: #666;
-}
-
-.close-options-button {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #999;
-  padding: 5px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.2s;
-}
-
-.close-options-button:hover {
-  background-color: #f5f5f5;
-  color: #333;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.cancel-button, .create-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.cancel-button {
-  background-color: #f5f5f5;
-  color: #666;
-}
-
-.cancel-button:hover {
-  background-color: #e8e8e8;
-  color: #333;
-}
-
-.create-button {
-  background-color: #4d90fe;
-  color: white;
-  box-shadow: 0 2px 5px rgba(77, 144, 254, 0.2);
-}
-
-.create-button:hover {
-  background-color: #3a7be0;
-  box-shadow: 0 4px 8px rgba(77, 144, 254, 0.3);
-  transform: translateY(-1px);
-}
-
-.create-button:disabled {
-  background-color: #a0c3ff;
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}
-
-/* 모달 공통 스타일 */
-.modal-title {
-  text-align: center;
-  font-size: 22px;
-  margin-bottom: 25px;
-  color: #333;
-  font-weight: 600;
-}
-
-.upload-modal, .folder-create-modal {
-  position: relative;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.close-modal-button {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #999;
-  padding: 5px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.2s;
-}
-
-.close-modal-button:hover {
-  background-color: #f5f5f5;
-  color: #333;
-}
-
-/* 파일 업로드 영역 스타일 */
-.file-upload-area {
-  margin: 20px 0 30px;
-  border: 2px dashed #ddd;
-  border-radius: 16px;
-  padding: 30px;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.file-upload-area:hover {
-  border-color: #4d90fe;
-  background-color: #f8f9ff;
-}
-
-.file-upload-area.has-file {
-  border-color: #4caf50;
-  background-color: #f1f8e9;
-}
-
-.file-input {
-  display: none;
-}
-
-.file-upload-label {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.upload-icon {
-  width: 60px;
-  height: 60px;
-  margin-bottom: 15px;
-  color: #4d90fe;
-}
-
-.file-upload-area.has-file .upload-icon {
-  color: #4caf50;
-}
-
-.upload-text {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.upload-title {
-  font-weight: 600;
-  font-size: 18px;
-  margin-bottom: 6px;
-  color: #333;
-}
-
-.upload-desc {
-  font-size: 14px;
-  color: #666;
-}
-
-.selected-file {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #4caf50;
-  font-weight: 500;
-  word-break: break-all;
-  max-width: 280px;
-}
-
-/* 폴더 생성 스타일 */
-.folder-input-container {
-  display: flex;
-  align-items: center;
-  margin: 25px 0 30px;
-  background-color: #f8f9ff;
-  border-radius: 12px;
-  padding: 5px;
-  border: 1px solid #e0e0e0;
-}
-
-.folder-icon-preview {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #ffb300;
-  margin: 0 10px;
-}
-
-.folder-input {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  background: transparent;
-  font-size: 16px;
-  outline: none;
-}
-
-.folder-input::placeholder {
-  color: #aaa;
-}
-
-
-@media (max-width: 768px) {
-  .folder-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  }
 }
 </style>

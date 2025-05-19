@@ -1,164 +1,223 @@
 <template>
-    <div class="student-ai-tutor-container">
-      <div class="sidebar">
-        <div class="search-bar">
-          <div class="search-input-wrapper">
-            <i class="search-icon">🔍</i>
-            <input type="text" placeholder="대화 검색하기" class="search-input" />
-          </div>
-          <button class="new-chat-btn">
-            <i class="new-chat-icon">✏️</i>
-          </button>
+  <div class="student-ai-tutor-container">
+    <div class="sidebar">
+      <div class="search-bar">
+        <div class="search-input-wrapper">
+          <i class="search-icon">🔍</i>
+          <input 
+            type="text" 
+            placeholder="대화 검색하기" 
+            class="search-input" 
+            v-model="searchQuery"
+          />
         </div>
-        
-        <div class="history-section">
-          <div class="today-section">
-            <div class="section-title">오늘</div>
-            <div class="menu-item active">
-              <span class="item-text">1과목 3장 질문</span>
-              <div class="item-actions">
-                <span class="more-options">•••</span>
-              </div>
-            </div>
-          </div>
-          
-          <div class="previous-section">
-            <div class="section-title">어제</div>
-            <div class="menu-item">
-              <span class="item-text">1과목 3장 질문</span>
-            </div>
-            <div class="menu-item">
-              <span class="item-text">1과목 3장 질문</span>
-            </div>
-            <div class="menu-item">
-              <span class="item-text">1과목 3장 질문</span>
-            </div>
-          </div>
-          
-          <div class="last-week-section">
-            <div class="section-title">지난 주</div>
-            <div class="menu-item">
-              <span class="item-text">1과목 3장 질문</span>
-            </div>
-            <div class="menu-item">
-              <span class="item-text">1과목 3장 질문</span>
-            </div>
-            <div class="menu-item">
-              <span class="item-text">1과목 3장 질문</span>
-            </div>
-            <div class="menu-item">
-              <span class="item-text">1과목 3장 질문</span>
-            </div>
-            <div class="menu-item">
-              <span class="item-text">1과목 3장 질문</span>
-            </div>
-            <div class="menu-item">
-              <span class="item-text">1과목 3장 질문</span>
-            </div>
-          </div>
-        </div>
+        <button class="new-chat-btn" @click="startNewChat">
+          <i class="new-chat-icon">✏️</i>
+        </button>
       </div>
-
-      <div class="main-content">
-        <div class="greeting-header">
-          <div class="greeting-text">
-            <h1>안녕하세요! <span class="wave-emoji">👋</span></h1>
-            <h2>어떤 도움이 필요하세요?</h2>
-          </div>
-        </div>
-
-        <div class="quick-actions">
-          <div class="quick-action-card">
-            <div class="action-icon">📝</div>
-            <div class="action-text">숙제 도움받기</div>
-          </div>
-          <div class="quick-action-card">
-            <div class="action-icon">🧩</div>
-            <div class="action-text">문제 풀이</div>
-          </div>
-          <div class="quick-action-card">
-            <div class="action-icon">📚</div>
-            <div class="action-text">개념 복습</div>
-          </div>
-          <div class="quick-action-card">
-            <div class="action-icon">🔍</div>
-            <div class="action-text">자료 찾기</div>
-          </div>
-        </div>
-        
-        <div class="input-section">
-          <div class="file-upload-section">
-            <div class="upload-header">
-              <div class="upload-instructions">질문할 PDF를 선택해주세요...</div>
-              <div class="supported-formats">지원 형식: PDF</div>
-            </div>
-            
-            <div class="upload-area" @click="selectFile" @dragover.prevent @drop.prevent="handleFileDrop">
-              <div class="upload-icon">📄</div>
-              <div class="upload-text">여기에 파일을 끌어다 놓거나</div>
-              <button class="upload-button">파일선택</button>
-              <input ref="fileInput" type="file" class="file-input" @change="handleFileSelect" accept=".pdf" hidden />
-            </div>
-            
-            <div class="question-input-area">
-              <textarea 
-                v-model="userQuestion" 
-                class="question-input" 
-                placeholder="질문을 입력하세요..."
-                :rows="questionRows"
-                @input="adjustTextareaHeight"
-                ref="questionTextarea"
-              ></textarea>
-            </div>
-            
-            <div v-if="selectedFile" class="selected-file">
-              <div class="file-preview">
-                <div class="file-icon">📄</div>
-                <div class="file-details">
-                  <div class="file-name">{{ selectedFile.name }}</div>
-                  <div class="file-size">{{ formatFileSize(selectedFile.size) }}</div>
-                </div>
-              </div>
-              <button class="remove-file" @click.stop="removeFile">✕</button>
-            </div>
-            
-            <div class="upload-actions">
-              <div class="action-buttons">
-                <button 
-                  class="send-button" 
-                  :class="{ active: userQuestion.trim() || selectedFile }" 
-                  :disabled="!userQuestion.trim() && !selectedFile"
-                  @click="sendQuestion"
-                >
-                  <span class="send-text">보내기</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="send-icon">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                  </svg>
-                </button>
-              </div>
+      
+      <div class="history-section">
+        <div v-for="(chatGroup, timeGroup) in groupedChatHistory" :key="timeGroup" class="history-group">
+          <div class="section-title">{{ getTimeGroupLabel(timeGroup) }}</div>
+          <div 
+            v-for="chat in chatGroup" 
+            :key="chat.id" 
+            class="menu-item"
+            :class="{ 'active': currentChatId === chat.id }"
+            @click="loadChat(chat.id)"
+          >
+            <span class="item-text">{{ chat.title || '새 대화' }}</span>
+            <div class="item-actions">
+              <span class="more-options" @click.stop="deleteChat(chat.id)">• • •</span>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </template>
   
-  <script>
+    <div class="main-content">
+      <div v-if="!currentChat" class="main-background">
+        <img src="@/assets/images/planova-small-logo.jpg" alt="배경" class="background-logo" />
+      </div>
+
+      <div v-if="!currentChat" class="quick-actions">
+        <div 
+          v-for="action in quickActions" 
+          :key="action.text" 
+          class="quick-action-card"
+          @click="startQuickAction(action)"
+        >
+          <div class="action-icon">{{ action.icon }}</div>
+          <div class="action-text">{{ action.text }}</div>
+        </div>
+      </div>
+      
+      <div v-if="currentChat" class="chat-container">
+        <div class="chat-inner">
+          <!-- 대화가 시작되었지만 메시지가 없을 때도 배경 로고 표시 -->
+          <div class="chat-messages" ref="chatMessagesContainer">
+            <div 
+              v-for="(message, index) in currentChat.messages" 
+              :key="index" 
+              class="chat-message"
+              :class="{
+                'user-message': message.role === 'user',
+                'ai-message': message.role === 'assistant'
+              }"
+            >
+              {{ message.content }}
+            </div>
+            <div v-if="isLoading" class="loading-indicator">
+              <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <div class="input-section">
+        <div class="file-upload-section">    
+          <div 
+            class="upload-area" 
+            @click="selectFile" 
+            @dragover.prevent 
+            @drop.prevent="handleFileDrop"
+          >
+            <input 
+              ref="fileInput" 
+              type="file" 
+              class="file-input" 
+              @change="handleFileSelect" 
+              accept=".pdf" 
+              hidden 
+            />
+          </div>
+          
+          <div v-if="selectedFile" class="selected-file">
+            <div class="file-preview">
+              <div class="file-icon">📄</div>
+              <div class="file-details">
+                <div class="file-name">{{ selectedFile.name }}</div>
+                <div class="file-size">{{ formatFileSize(selectedFile.size) }}</div>
+              </div>
+            </div>
+            <button class="remove-file" @click.stop="removeFile">✕</button>
+          </div>
+          
+          <div class="question-input-area">
+            <textarea 
+              v-model="userQuestion" 
+              class="question-input" 
+              placeholder="질문을 입력하세요..."
+              :rows="questionRows"
+              @input="adjustTextareaHeight"
+              @keydown.enter.exact.prevent="sendQuestion"
+              ref="questionTextarea"
+            ></textarea>
+          </div>
+          
+          <div class="upload-actions">
+            <div class="action-buttons">
+              <button 
+                class="send-button" 
+                :class="{ active: userQuestion.trim().length > 0 || selectedFile }" 
+                :disabled="(userQuestion.trim().length === 0 && !selectedFile) || isLoading"
+                @click="sendQuestion"
+              >
+                <span class="send-text">보내기</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="send-icon">
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+  
+<script>
   export default {
     name: 'StudentAiTutorPage',
     data() {
       return {
+        // AI 대화 관련 상태
+        chatHistory: [],
+        currentChatId: null,
+        currentChat: null,
+        isLoading: false,
+        
+        // 검색 및 필터링
+        searchQuery: '',
+        
+        // 입력 관련 상태
         selectedFile: null,
         userQuestion: '',
         questionRows: 1,
         minRows: 1,
-        maxRows: 5
+        maxRows: 5,
+      }
+    },
+    computed: {
+      groupedChatHistory() {
+        const groupedChats = {
+          today: [],
+          yesterday: [],
+          lastWeek: [],
+          older: []
+        };
+        
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        const lastWeek = new Date(today);
+        lastWeek.setDate(today.getDate() - 7);
+        
+        this.chatHistory
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .forEach(chat => {
+            const chatDate = new Date(chat.createdAt);
+            
+            if (chatDate >= today) {
+              groupedChats.today.push(chat);
+            } else if (chatDate >= yesterday) {
+              groupedChats.yesterday.push(chat);
+            } else if (chatDate >= lastWeek) {
+              groupedChats.lastWeek.push(chat);
+            } else {
+              groupedChats.older.push(chat);
+            }
+          });
+        
+        return groupedChats;
       }
     },
     methods: {
+      getTimeGroupLabel(timeGroup) {
+        switch(timeGroup) {
+          case 'today': return '오늘';
+          case 'yesterday': return '어제';
+          case 'lastWeek': return '지난 주';
+          case 'older': return '이전';
+          default: return '대화';
+        }
+      },
+      
+      truncateText(text, length) {
+        return text.length > length 
+          ? text.substring(0, length) + '...' 
+          : text;
+      },
+      
       selectFile() {
         this.$refs.fileInput.click();
       },
+      
       handleFileSelect(event) {
         if (event.target.files.length > 0) {
           const file = event.target.files[0];
@@ -171,11 +230,12 @@
           }
         }
       },
+      
       handleFileDrop(event) {
         event.preventDefault();
         if (event.dataTransfer.files.length > 0) {
           const file = event.dataTransfer.files[0];
-
+  
           if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
             this.selectedFile = file;
           } else {
@@ -183,10 +243,22 @@
           }
         }
       },
+      
       removeFile() {
         this.selectedFile = null;
         this.$refs.fileInput.value = '';
       },
+      
+      formatFileSize(size) {
+        if (size < 1024) {
+          return size + ' B';
+        } else if (size < 1024 * 1024) {
+          return (size / 1024).toFixed(1) + ' KB';
+        } else {
+          return (size / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+      },
+      
       adjustTextareaHeight() {
         const textarea = this.$refs.questionTextarea;
         textarea.style.height = 'auto';
@@ -203,51 +275,188 @@
         this.questionRows = newRows;
         textarea.style.height = `${Math.min(textarea.scrollHeight, rowHeight * this.maxRows)}px`;
       },
-      sendQuestion() {
-        if (!this.userQuestion.trim() && !this.selectedFile) {
+      
+      startNewChat() {
+        const newChatId = `chat_${Date.now()}`;
+        this.currentChatId = newChatId;
+        this.currentChat = {
+          id: newChatId,
+          title: '새 대화',
+          messages: [],
+          createdAt: new Date().toISOString()
+        };
+        this.chatHistory.push(this.currentChat);
+        this.saveChats();
+      },
+      
+      startQuickAction(action) {
+        this.startNewChat();
+        this.userQuestion = `${action.text}에 대해 도와주세요.`;
+        this.sendQuestion();
+      },
+      
+      loadChat(chatId) {
+        this.currentChatId = chatId;
+        this.currentChat = this.chatHistory.find(chat => chat.id === chatId);
+        this.scrollToBottom();
+      },
+      
+      // 삭제 기능: 채팅 삭제
+      deleteChat(chatId) {
+        if (confirm('이 대화를 삭제하시겠습니까?')) {
+          this.chatHistory = this.chatHistory.filter(chat => chat.id !== chatId);
+          if (this.currentChatId === chatId) {
+            this.currentChatId = null;
+            this.currentChat = null;
+          }
+          this.saveChats();
+        }
+      },
+      
+      async getAIResponse(userMessage) {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            // 미리 정의된 응답 목록에서 랜덤 선택
+            const defaultResponses = [
+              "안녕하세요! 무엇을 도와드릴까요?",
+              "질문해주셔서 감사합니다. 답변드리겠습니다.",
+              "흥미로운 질문이네요. 제가 알아본 바로는...",
+              "도움이 필요하신 부분을 좀 더 자세히 설명해주실 수 있을까요?",
+              "이 주제에 대해 더 알고 싶으시다면 추가 질문을 해주세요."
+            ];
+            
+            const response = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+            
+            this.isLoading = false;
+            this.selectedFile = null;
+            if (this.$refs.fileInput) {
+              this.$refs.fileInput.value = '';
+            }
+            this.userQuestion = '';
+            this.questionRows = 1;
+            if (this.$refs.questionTextarea) {
+              this.$refs.questionTextarea.style.height = 'auto';
+            }
+            
+            resolve(response);
+          }, 1500);
+        });
+      },
+      
+      async sendQuestion() {
+        if ((this.userQuestion.trim().length === 0) && !this.selectedFile) {
           return;
         }
         
-        const formData = new FormData();
-        if (this.selectedFile) {
-          formData.append('file', this.selectedFile);
-        }
-        if (this.userQuestion.trim()) {
-          formData.append('question', this.userQuestion.trim());
+        if (!this.currentChat) {
+          this.startNewChat();
         }
         
-        console.log('Sending question:', this.userQuestion);
-        console.log('Uploading file:', this.selectedFile ? this.selectedFile.name : 'No file');
+        // 콘솔에 디버깅 정보 출력
+        console.log('Sending message:', {
+          question: this.userQuestion,
+          file: this.selectedFile ? this.selectedFile.name : 'No file'
+        });
         
-        // API 호출 예시
-        // axios.post('/api/ask-question', formData)
-        //   .then(response => {
-        //     console.log('Question sent successfully', response);
-        //     this.startConversation(response.data.conversationId);
-        //   })
-        //   .catch(error => {
-        //     console.error('Failed to send question', error);
-        //   });
+        const userMessage = {
+          role: 'user',
+          type: this.selectedFile ? 'file' : 'text',
+          content: this.userQuestion,
+          fileName: this.selectedFile?.name,
+          fileSize: this.selectedFile?.size,
+          timestamp: new Date().toISOString()
+        };
+        this.currentChat.messages.push(userMessage);
         
-        this.userQuestion = '';
-        this.selectedFile = null;
-        this.$refs.fileInput.value = '';
-        this.questionRows = 1;
+        this.isLoading = true;
+        this.scrollToBottom();
+        
+        try {
+          const response = await this.getAIResponse(userMessage);
+          
+          this.currentChat.messages.push({
+            role: 'assistant',
+            type: 'text',
+            content: response,
+            timestamp: new Date().toISOString()
+          });
+          
+          if (this.currentChat.messages.length <= 2) {
+            this.currentChat.title = this.truncateText(this.userQuestion, 20);
+          }
+
+          this.saveChats();
+          this.scrollToBottom();
+        } catch (error) {
+          console.error('AI 응답 오류:', error);
+          this.currentChat.messages.push({
+            role: 'assistant',
+            type: 'text',
+            content: '죄송합니다. 현재 AI 서비스에 문제가 있습니다. 잠시 후 다시 시도해주세요.',
+            timestamp: new Date().toISOString()
+          });
+          
+          this.isLoading = false;
+          this.selectedFile = null;
+          if (this.$refs.fileInput) {
+            this.$refs.fileInput.value = '';
+          }
+          this.userQuestion = '';
+          this.questionRows = 1;
+          if (this.$refs.questionTextarea) {
+            this.$refs.questionTextarea.style.height = 'auto';
+          }
+        }
       },
-      formatFileSize(size) {
-        if (size < 1024) {
-          return size + ' B';
-        } else if (size < 1024 * 1024) {
-          return (size / 1024).toFixed(1) + ' KB';
-        } else {
-          return (size / (1024 * 1024)).toFixed(1) + ' MB';
+      
+      saveChats() {
+        try {
+          localStorage.setItem('aiChatHistory', JSON.stringify(this.chatHistory));
+        } catch (error) {
+          console.error('대화 저장 중 오류:', error);
         }
+      },
+      
+      loadChats() {
+        try {
+          const savedChats = localStorage.getItem('aiChatHistory');
+          if (savedChats) {
+            this.chatHistory = JSON.parse(savedChats);
+          }
+        } catch (error) {
+          console.error('대화 불러오기 중 오류:', error);
+        }
+      },
+      
+      scrollToBottom() {
+        this.$nextTick(() => {
+          const container = this.$refs.chatMessagesContainer;
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+          }
+        });
       }
     },
     mounted() {
+      this.loadChats();
+      
       this.$nextTick(() => {
-        this.adjustTextareaHeight();
+        if (this.$refs.questionTextarea) {
+          this.adjustTextareaHeight();
+        }
       });
+    },
+    watch: {
+      chatHistory: {
+        deep: true,
+        handler() {
+          this.saveChats();
+        }
+      },
+      
+      currentChat() {
+        this.scrollToBottom();
+      }
     }
   }
   </script>
@@ -371,13 +580,14 @@
   }
   
   /* 메인 콘텐츠 스타일링 */
-  .main-content {
-    flex: 1;
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-  }
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column-reverse;
+  height: 100%;
+  overflow: hidden;
+  padding: 30px;
+}
   
   .greeting-header {
     display: flex;
@@ -459,18 +669,112 @@
     margin-right: 20px;
   }
   
-  .action-text {
+.action-text {
     font-size: 18px;
     font-weight: 500;
+}
+
+  .chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-height: 400px;
+  }
+
+  .chat-inner {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    z-index: 1;
+  }
+
+  .chat-background {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    z-index: 2;
+    pointer-events: none;
+    min-height: 300px;
+  }
+
+  .chat-messages {
+    position: relative;
+    z-index: 3;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 15px;
+    padding-bottom: 20px;
+  }
+  
+  .chat-message {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    word-break: break-word;
+  }
+  
+  .user-message {
+    align-self: flex-end;
+    background-color: #f1883c;
+    color: white;
+  }
+  
+  .ai-message {
+    align-self: flex-start;
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  
+  .loading-indicator {
+    align-self: flex-start;
+    margin-top: 10px;
+  }
+  
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+  }
+  
+  .typing-indicator span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ccc;
+    display: inline-block;
+    animation: bounce 1.3s linear infinite;
+  }
+  
+  .typing-indicator span:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  
+  .typing-indicator span:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-4px); }
   }
   
   /* 질문 입력 영역 */
-  .input-section {
-    margin-top: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
+.input-section {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  justify-content: flex-end;
+  min-height: 120px;
+}
   
   .question-input-area {
     margin: 15px 0;
@@ -522,36 +826,6 @@
     color: #888;
   }
   
-  .upload-area {
-    border: 2px dashed #e0e0e0;
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: #fafafa;
-    transition: all 0.2s;
-    margin-bottom: 15px;
-    cursor: pointer;
-  }
-  
-  .upload-area:hover {
-    border-color: #f1883c;
-    background-color: #fff8f2;
-  }
-  
-  .upload-icon {
-    font-size: 32px;
-    margin-bottom: 12px;
-    color: #888;
-  }
-  
-  .upload-text {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 15px;
-  }
   
   .upload-button {
     background-color: #f5f5f7;
@@ -729,6 +1003,7 @@
     .quick-action-card {
       padding: 18px;
       height: 90px;
+      width: auto;
     }
     
     .action-icon {
@@ -739,4 +1014,25 @@
       font-size: 16px;
     }
   }
-  </style>
+
+.chat-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  z-index: 0;
+  background-color: #f8f9fa;
+  min-height: 300px;
+}
+
+  .background-logo {
+    max-width: 260px;
+    opacity: 0.2;
+  }
+
+</style>
