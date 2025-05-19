@@ -4,6 +4,13 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const isLoading = ref(false);
+const activeTab = ref('email'); // 'email' 또는 'kakao'
+
+// 이메일 로그인 관련 변수
+const email = ref('');
+const password = ref('');
+const rememberMe = ref(false);
+const emailLoginError = ref('');
 
 // 환경변수에서 카카오 키 읽기 (Vite 방식과 Vue 방식 모두 시도)
 const KAKAO_KEY = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY || 
@@ -20,6 +27,20 @@ const debug = ref({
   kakaoKey: KAKAO_KEY,
   isKakaoLoaded: false,
   isInitialized: false
+});
+
+// 폼 유효성 검사
+const isEmailValid = computed(() => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.value);
+});
+
+const isPasswordValid = computed(() => {
+  return password.value.length >= 6;
+});
+
+const isFormValid = computed(() => {
+  return isEmailValid.value && isPasswordValid.value;
 });
 
 // 카카오 SDK 초기화
@@ -81,7 +102,50 @@ onMounted(async () => {
   }
 });
 
-const login = async () => {
+// 이메일 로그인 처리
+const emailLogin = async () => {
+  if (!isFormValid.value) {
+    emailLoginError.value = '유효하지 않은 이메일 또는 비밀번호입니다.';
+    return;
+  }
+
+  try {
+    isLoading.value = true;
+    emailLoginError.value = '';
+    
+    // 여기에 실제 이메일 로그인 API 호출 추가
+    // 예: const response = await axios.post('/api/login', { email: email.value, password: password.value });
+    
+    // 임시로 성공 처리 (실제 구현에서는 서버 응답에 따라 처리)
+    console.log('이메일 로그인 시도:', email.value);
+    
+    // 로그인 성공 시 처리
+    setTimeout(() => {
+      // 로그인 정보 저장
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userEmail', email.value);
+      localStorage.setItem('loginMethod', 'email');
+      
+      if (rememberMe.value) {
+        localStorage.setItem('rememberedEmail', email.value);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+      
+      // 학생 메인 페이지로 이동
+      router.push({ name: 'studentMain' });
+    }, 1000); // 실제 구현에서는 이 지연을 제거하고 실제 API 응답 후 처리
+    
+  } catch (error) {
+    console.error('로그인 실패:', error);
+    emailLoginError.value = '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// 카카오 로그인 처리
+const kakaoLogin = async () => {
   console.log('=== 로그인 시도 ===');
   console.log('카카오 로드 여부:', debug.value.isKakaoLoaded);
   console.log('카카오 초기화 여부:', debug.value.isInitialized);
@@ -114,6 +178,7 @@ const login = async () => {
             localStorage.setItem('isAuthenticated', 'true');
             localStorage.setItem('kakaoToken', authObj.access_token);
             localStorage.setItem('userInfo', JSON.stringify(userData));
+            localStorage.setItem('loginMethod', 'kakao');
             
             // 학생 메인 페이지로 이동
             router.push({ name: 'studentMain' });
@@ -137,23 +202,38 @@ const login = async () => {
   }
 };
 
-// 카카오 로그아웃 (옵션)
+// 로그아웃 (옵션)
 const logout = () => {
-  if (window.Kakao?.Auth.getAccessToken()) {
+  const loginMethod = localStorage.getItem('loginMethod');
+  
+  if (loginMethod === 'kakao' && window.Kakao?.Auth.getAccessToken()) {
     window.Kakao?.API.request({
       url: '/v1/user/unlink',
       success: () => {
         console.log('카카오 로그아웃 성공');
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('kakaoToken');
-        localStorage.removeItem('userInfo');
       },
       fail: (error) => {
         console.error('카카오 로그아웃 실패', error);
       }
     });
   }
+  
+  // 공통 로그아웃 처리
+  localStorage.removeItem('isAuthenticated');
+  localStorage.removeItem('kakaoToken');
+  localStorage.removeItem('userInfo');
+  localStorage.removeItem('userEmail');
+  localStorage.removeItem('loginMethod');
 };
+
+// 저장된 이메일 불러오기
+onMounted(() => {
+  const rememberedEmail = localStorage.getItem('rememberedEmail');
+  if (rememberedEmail) {
+    email.value = rememberedEmail;
+    rememberMe.value = true;
+  }
+});
 </script>
 
 <template>
@@ -175,22 +255,92 @@ const logout = () => {
           <span class="highlight">학습의 여정을 시작하세요!</span>
         </h1>
         
-        <!-- 디버그 정보 (개발 중에만 표시)
-        <div class="debug-info">
-          <small>
-            카카오 키: {{ debug.kakaoKey ? '설정됨 ✓' : '설정 안됨 ✗' }}<br>
-            SDK 로드: {{ debug.isKakaoLoaded ? '✓' : '✗' }}<br>
-            초기화: {{ debug.isInitialized ? '✓' : '✗' }}
-          </small>
-        </div> -->
+        <!-- 로그인 탭 메뉴 -->
+        <div class="login-tabs">
+          <button 
+            @click="activeTab = 'email'" 
+            :class="{ active: activeTab === 'email' }"
+            class="tab-button"
+          >
+            이메일로 로그인
+          </button>
+          <button 
+            @click="activeTab = 'kakao'" 
+            :class="{ active: activeTab === 'kakao' }"
+            class="tab-button"
+          >
+            카카오로 로그인
+          </button>
+        </div>
         
-        <form @submit.prevent="login">
+        <!-- 이메일 로그인 폼 -->
+        <div v-if="activeTab === 'email'" class="tab-content email-form">
+          <form @submit.prevent="emailLogin">
+            <div class="form-group">
+              <label for="email">이메일</label>
+              <input 
+                type="email" 
+                id="email" 
+                v-model="email" 
+                placeholder="이메일 주소를 입력하세요"
+                :class="{ 'input-error': email && !isEmailValid }"
+                required
+              />
+              <small v-if="email && !isEmailValid" class="error-text">
+                유효한 이메일 주소를 입력해주세요.
+              </small>
+            </div>
+            
+            <div class="form-group">
+              <label for="password">비밀번호</label>
+              <input 
+                type="password" 
+                id="password" 
+                v-model="password" 
+                placeholder="비밀번호를 입력하세요"
+                :class="{ 'input-error': password && !isPasswordValid }"
+                required
+              />
+              <small v-if="password && !isPasswordValid" class="error-text">
+                비밀번호는 최소 6자 이상이어야 합니다.
+              </small>
+            </div>
+            
+            <div class="form-options">
+              <div class="remember-me">
+                <input type="checkbox" id="remember" v-model="rememberMe" />
+                <label for="remember">이메일 기억하기</label>
+              </div>
+              <a href="#" class="forgot-password">비밀번호 찾기</a>
+            </div>
+            
+            <button 
+              type="submit" 
+              class="login-button"
+              :disabled="isLoading || (!isFormValid && (email || password))"
+            >
+              <span v-if="!isLoading">로그인</span>
+              <div v-else class="button-spinner"></div>
+            </button>
+            
+            <div v-if="emailLoginError" class="login-error">
+              {{ emailLoginError }}
+            </div>
+            
+            <div class="signup-link">
+              계정이 없으신가요? <a href="#">회원가입</a>
+            </div>
+          </form>
+        </div>
+        
+        <!-- 카카오 로그인 -->
+        <div v-if="activeTab === 'kakao'" class="tab-content">
           <div class="kakao-button-container">
             <img 
               src="@/assets/images/kakao_login_large_wide.png" 
               alt="카카오 로그인" 
               class="kakao-login-image" 
-              @click="login"
+              @click="kakaoLogin"
               :class="{ 'disabled': isLoading || !debug.isInitialized }"
             />
             <div v-if="isLoading" class="loading-overlay">
@@ -198,7 +348,7 @@ const logout = () => {
               <span>로그인 중...</span>
             </div>
           </div>
-        </form>
+        </div>
         
         <div class="divider">
           <span>PLANOVA만의 특별한 기능</span>
@@ -236,17 +386,6 @@ const logout = () => {
 </template>
 
 <style scoped>
-.debug-info {
-  background-color: #f0f8ff;
-  padding: 12px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  text-align: center;
-  font-family: monospace;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
 .login-container {
   display: flex;
   justify-content: center;
@@ -331,10 +470,179 @@ const logout = () => {
   border-radius: 3px;
 }
 
+/* 로그인 탭 스타일 */
+.login-tabs {
+  display: flex;
+  margin-bottom: 25px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tab-button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.tab-button.active {
+  color: #F37322;
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #F37322;
+}
+
+.tab-content {
+  margin-bottom: 30px;
+}
+
+/* 이메일 로그인 폼 스타일 */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus {
+  border-color: #F37322;
+  box-shadow: 0 0 0 2px rgba(243, 115, 34, 0.1);
+}
+
+.input-error {
+  border-color: #e53935 !important;
+}
+
+.error-text {
+  color: #e53935;
+  font-size: 12px;
+  margin-top: 5px;
+  display: block;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+}
+
+.remember-me input {
+  margin-right: 6px;
+}
+
+.forgot-password {
+  color: #666;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.forgot-password:hover {
+  color: #F37322;
+  text-decoration: underline;
+}
+
+.login-button {
+  width: 100%;
+  padding: 14px;
+  background-color: #F37322;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-button:hover:not(:disabled) {
+  background-color: #e05e0a;
+  transform: translateY(-2px);
+}
+
+.login-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.button-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+}
+
+.login-error {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #ffebee;
+  color: #c62828;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.signup-link {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.signup-link a {
+  color: #F37322;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.signup-link a:hover {
+  text-decoration: underline;
+}
+
+/* 카카오 로그인 스타일 */
 .kakao-button-container {
   position: relative;
   width: 100%;
-  margin-bottom: 45px;
+  margin-bottom: 10px;
   transition: transform 0.3s ease;
 }
 
@@ -386,10 +694,7 @@ const logout = () => {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
+/* 구분선 및 하단 기능 스타일 */
 .divider {
   position: relative;
   margin: 0 0 30px;
@@ -468,18 +773,31 @@ const logout = () => {
   }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 480px) {
   .login-content {
     padding: 40px 25px;
   }
   
   .logo-image {
-    width: 100px;
+    width: 70px;
   }
   
   .login-title {
     font-size: 22px;
-    margin-top: 10px;
+    margin-bottom: 25px;
+  }
+  
+  .tab-button {
+    font-size: 14px;
+    padding: 10px 0;
+  }
+  
+  .form-group input {
+    padding: 10px;
   }
   
   .benefit-item {
@@ -490,6 +808,10 @@ const logout = () => {
     width: 45px;
     height: 45px;
     font-size: 20px;
+  }
+  
+  .benefit-text {
+    font-size: 12px;
   }
 }
 </style>
