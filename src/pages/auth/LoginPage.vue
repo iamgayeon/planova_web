@@ -226,6 +226,11 @@ const logout = () => {
   localStorage.removeItem('loginMethod');
 };
 
+// 회원가입 페이지로 이동하는 함수 추가
+const goToSignup = () => {
+  router.push({ name: 'signup' });
+};
+
 // 저장된 이메일 불러오기
 onMounted(() => {
   const rememberedEmail = localStorage.getItem('rememberedEmail');
@@ -328,7 +333,7 @@ onMounted(() => {
             </div>
             
             <div class="signup-link">
-              계정이 없으신가요? <a href="#">회원가입</a>
+              계정이 없으신가요?<a href="#" @click.prevent="goToSignup">회원가입</a>
             </div>
           </form>
         </div>
